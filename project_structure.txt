@@ -3,7 +3,8 @@ Structure du projet (avec glob)
 
 ├── 📁 supabase/
 │   ├── 📄 schema.sql
-│   └── 📄 migration_2026_08_16_whatsapp_auth.sql
+│   ├── 📄 migration_2026_08_17_citizen_auth.sql
+│   └── 📄 migration_2026_08_16_whatsapp_auth_old.sql
 ├── 📁 src/
 │   ├── 📁 types/
 │   │   └── 📄 database.ts
@@ -16,10 +17,12 @@ Structure du projet (avec glob)
 │   ├── 📁 routes/
 │   │   ├── 📄 __root.tsx
 │   │   ├── 📄 statut.tsx
+│   │   ├── 📄 signalements.tsx
 │   │   ├── 📄 signalement.tsx
 │   │   ├── 📄 securite.tsx
 │   │   ├── 📄 README.md
 │   │   ├── 📄 profile.tsx
+│   │   ├── 📄 mes-declarations.tsx
 │   │   ├── 📄 index.tsx
 │   │   ├── 📄 guide.tsx
 │   │   ├── 📄 faq.tsx
@@ -92,6 +95,7 @@ Structure du projet (avec glob)
 │   │   ├── 📄 SecurityBadge.tsx
 │   │   ├── 📄 Navigation.tsx
 │   │   ├── 📄 LoadingSpinner.tsx
+│   │   ├── 📄 HeroBanner.tsx
 │   │   ├── 📄 DocumentCard.tsx
 │   │   ├── 📄 ChatMessage.tsx
 │   │   ├── 📄 AppShell.tsx
@@ -138,4 +142,7 @@ Structure du projet (avec glob)
 ├── 📄 cd
 ├── 📄 bunfig.toml
 ├── 📄 bun.lock
+├── 📄 build.log
+├── 📄 build-output.txt
+├── 📄 build-exit.txt
 └── 📄 AGENTS.md
