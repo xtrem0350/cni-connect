@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { EyeOff, Fingerprint, KeyRound, Lock, UserCheck } from "lucide-react";
-import securityImage from "@/assets/images/security.jpg";
 import { AppShell } from "@/components/AppShell";
+import { HeroBanner } from "@/components/HeroBanner";
 import { SecurityBadge } from "@/components/SecurityBadge";
 
 export const Route = createFileRoute("/securite")({
@@ -52,11 +52,9 @@ const POINTS = [
 function Securite() {
   return (
     <AppShell>
+      <HeroBanner title="Sécurité" subtitle="Comment nous protégeons vos données" />
       <SecurityBadge label="Aucun numéro stocké en clair" />
-      <div className="mt-4 overflow-hidden rounded-2xl border border-border bg-card">
-        <img src={securityImage} alt="Sécurité et protection des données" className="h-52 w-full object-cover" />
-      </div>
-      <h1 className="mt-3 text-2xl font-bold">Comment nous protégeons vos données</h1>
+      <div className="mt-4" />
       <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
         Un document d'identité est une donnée sensible. Notre principe est simple : collecter le
         minimum, ne jamais rendre un numéro lisible, et n'ouvrir le contact qu'après une preuve.

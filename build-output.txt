@@ -1,0 +1,155 @@
+
+> build
+> vite build
+
+[33mThe plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the [1mresolve.tsconfigPaths[22m option. You can remove the plugin and set [1mresolve.tsconfigPaths: true[22m in your Vite config instead.[39m
+[36mvite v8.2.1 [32mbuilding client environment for production...[36m[39m
+[2Ktransforming...✓ 2046 modules transformed.
+rendering chunks...
+computing gzip size...
+.output/public/assets/logo-DYVrltUA.png             215.32 kB
+.output/public/assets/styles-B_TSkE9G.css            85.07 kB │ gzip:  14.36 kB
+.output/public/assets/arrow-right-Cjp_DXu3.js         0.15 kB │ gzip:   0.15 kB
+.output/public/assets/HeroBanner-C1IEG5MV.js          0.92 kB │ gzip:   0.48 kB
+.output/public/assets/card-v5Ny76-0.js                1.05 kB │ gzip:   0.40 kB
+.output/public/assets/signalements-D2zcgG4b.js        1.33 kB │ gzip:   0.69 kB
+.output/public/assets/guide-Cbw3de3c.js               1.51 kB │ gzip:   0.73 kB
+.output/public/assets/chat-SDYlZi8A.js                1.80 kB │ gzip:   0.82 kB
+.output/public/assets/mes-declarations-BLeaX2t2.js    2.61 kB │ gzip:   1.13 kB
+.output/public/assets/signalement-DuC1bmw3.js         3.45 kB │ gzip:   1.47 kB
+.output/public/assets/declarations-D4vxqtD8.js        3.55 kB │ gzip:   1.31 kB
+.output/public/assets/routes-FMXh31A4.js              3.69 kB │ gzip:   1.67 kB
+.output/public/assets/securite-QE25tFtL.js            3.70 kB │ gzip:   1.79 kB
+.output/public/assets/auth-lXwewpV7.js                3.87 kB │ gzip:   1.58 kB
+.output/public/assets/profile-CWl5wIBz.js             3.88 kB │ gzip:   1.52 kB
+.output/public/assets/declarer-DncXDC95.js            5.77 kB │ gzip:   1.84 kB
+.output/public/assets/dashboard-BmZ97KAa.js           6.11 kB │ gzip:   1.93 kB
+.output/public/assets/radio-group-C2mwGFRD.js         6.57 kB │ gzip:   2.62 kB
+.output/public/assets/faq-6NCLdQOj.js                 9.07 kB │ gzip:   3.56 kB
+.output/public/assets/statut-BFJS-brF.js             10.47 kB │ gzip:   3.94 kB
+.output/public/assets/AppShell-CfDrFXKP.js          323.38 kB │ gzip:  89.18 kB
+.output/public/assets/index-Cp2VWEpJ.js             353.41 kB │ gzip: 110.32 kB
+
+[32m✓ built in 7.82s[39m
+[33m[33m[PLUGIN_TIMINGS] [0mYour build spent 78% of 7.8s inside plugin hooks (6.1s).
+Measured inside the callback, so queue time is excluded and time the callback itself awaited is not:
+  - @tailwindcss/vite:generate:build transform (22%, 1.7s, 1 call)
+  - tanstack-router:code-splitter:compile-reference-file transform (14%, 1.1s, 17 calls)
+Those rows are 37% of the build; the rest of the 78% is below.
+Not measurable — 2 hooks whose calls overlap, so elapsed time covers work other calls were doing. Profile with `node --cpu-prof`:
+  - tanstack-start-core:import-protection resolveId (6094 calls)
+  - tanstack-start-core::server-fn:client transform (15 calls)
+See https://rolldown.rs/reference/InputOptions.checks#plugintimings for more details.
+[39m
+[36mvite v8.2.1 [32mbuilding ssr environment for production...[36m[39m
+[2Ktransforming...✓ 107 modules transformed.
+rendering chunks...
+computing gzip size...
+node_modules/.nitro/vite/services/ssr/assets/logo-DYVrltUA.png                       215.32 kB
+node_modules/.nitro/vite/services/ssr/assets/styles-B_TSkE9G.css                      85.07 kB │ gzip: 14.36 kB
+node_modules/.nitro/vite/services/ssr/assets/empty-plugin-adapters-D9UWiqvJ.js         0.22 kB │ gzip:  0.16 kB
+node_modules/.nitro/vite/services/ssr/assets/radio-group-CrqKROuE.js                   1.25 kB │ gzip:  0.55 kB
+node_modules/.nitro/vite/services/ssr/assets/HeroBanner-BmKecdKQ.js                    1.27 kB │ gzip:  0.58 kB
+node_modules/.nitro/vite/services/ssr/assets/start-RKGGYzjZ.js                         1.57 kB │ gzip:  0.71 kB
+node_modules/.nitro/vite/services/ssr/assets/card-BvSBmK1K.js                          1.57 kB │ gzip:  0.49 kB
+node_modules/.nitro/vite/services/ssr/assets/signalements-CgtKX04m.js                  1.65 kB │ gzip:  0.71 kB
+node_modules/.nitro/vite/services/ssr/assets/guide-BFW8qIJa.js                         2.12 kB │ gzip:  0.89 kB
+node_modules/.nitro/vite/services/ssr/assets/statut-WBd1_2J8.js                        2.54 kB │ gzip:  1.07 kB
+node_modules/.nitro/vite/services/ssr/assets/chat-DQ0ApDtC.js                          2.73 kB │ gzip:  1.02 kB
+node_modules/.nitro/vite/services/ssr/assets/securite-Ds5vplY-.js                      3.05 kB │ gzip:  1.37 kB
+node_modules/.nitro/vite/services/ssr/assets/profile-CJQskwk0.js                       3.18 kB │ gzip:  0.99 kB
+node_modules/.nitro/vite/services/ssr/assets/createCsrfMiddleware-B2To0gPJ.js          3.19 kB │ gzip:  1.01 kB
+node_modules/.nitro/vite/services/ssr/assets/_tanstack-start-manifest_v-BD-04m8V.js    3.85 kB │ gzip:  0.77 kB
+node_modules/.nitro/vite/services/ssr/assets/faq-S1hKbXn7.js                           4.13 kB │ gzip:  1.77 kB
+node_modules/.nitro/vite/services/ssr/assets/routes-Cj3MkGrk.js                        4.39 kB │ gzip:  1.66 kB
+node_modules/.nitro/vite/services/ssr/assets/mes-declarations-BwqcWpsl.js              4.50 kB │ gzip:  1.49 kB
+node_modules/.nitro/vite/services/ssr/index.js                                         4.61 kB │ gzip:  1.92 kB
+node_modules/.nitro/vite/services/ssr/assets/declarations-CuHNTdnI.js                  4.62 kB │ gzip:  1.34 kB
+node_modules/.nitro/vite/services/ssr/assets/signalement-C-O8-Huh.js                   5.34 kB │ gzip:  1.86 kB
+node_modules/.nitro/vite/services/ssr/assets/auth-N2mA_a2B.js                          6.31 kB │ gzip:  2.06 kB
+node_modules/.nitro/vite/services/ssr/assets/dashboard-DlMJlBxD.js                     8.82 kB │ gzip:  2.14 kB
+node_modules/.nitro/vite/services/ssr/assets/declarer-z1zfP9mH.js                      9.90 kB │ gzip:  2.32 kB
+node_modules/.nitro/vite/services/ssr/assets/router-BBgODSE7.js                       15.22 kB │ gzip:  3.69 kB
+node_modules/.nitro/vite/services/ssr/assets/AppShell-DO9CJPHn.js                     21.81 kB │ gzip:  5.27 kB
+node_modules/.nitro/vite/services/ssr/assets/server-DSPHpUz9.js                       56.41 kB │ gzip: 14.54 kB
+
+[32m✓ built in 3.59s[39m
+[33m[33m[PLUGIN_TIMINGS] [0mYour build spent 83% of 3.6s inside plugin hooks (2.9s).
+Not measurable — 2 hooks whose calls overlap, so elapsed time covers work other calls were doing. Profile with `node --cpu-prof`:
+  - tanstack-start-core:import-protection resolveId (346 calls)
+  - tanstack-start-core::server-fn:ssr transform (12 calls)
+See https://rolldown.rs/reference/InputOptions.checks#plugintimings for more details.
+[39m
+
+[90m[[90mnitro[90m][39m [35m◐[39m Building [[35mNitro[39m] [2m(preset: [36mcloudflare-module[39m, compatibility: [36m2026-08-17[39m)[22m
+[90m[[90mnitro[90m][39m [32m✔[39m Generated public [36m.output/public[39m
+[36mvite v8.2.1 [32mbuilding nitro environment for production...[36m[39m
+
+[43m[30m WARN [39m[49m [36minlineDynamicImports[39m option is ignored because the [36mcodeSplitting[39m option is specified.
+
+[2Ktransforming...✓ 2061 modules transformed.
+rendering chunks...
+computing gzip size...
+.output/server/_ssr/empty-plugin-adapters-D9UWiqvJ.mjs        0.23 kB │ gzip:   0.16 kB
+.output/server/_chunks/ssr-renderer.mjs                       0.60 kB │ gzip:   0.36 kB
+.output/server/_libs/radix-ui__react-label.mjs                0.95 kB │ gzip:   0.50 kB
+.output/server/_libs/hookable.mjs                             1.16 kB │ gzip:   0.51 kB
+.output/server/_runtime.mjs                                   1.44 kB │ gzip:   0.67 kB
+.output/server/_ssr/start-RKGGYzjZ.mjs                        1.52 kB │ gzip:   0.70 kB
+.output/server/_ssr/HeroBanner-BmKecdKQ.mjs                   1.59 kB │ gzip:   0.67 kB
+.output/server/_ssr/radio-group-CrqKROuE.mjs                  1.63 kB │ gzip:   0.66 kB
+.output/server/_libs/radix-ui__primitive.mjs                  1.83 kB │ gzip:   0.72 kB
+.output/server/_ssr/card-BvSBmK1K.mjs                         1.99 kB │ gzip:   0.59 kB
+.output/server/_ssr/signalements-CgtKX04m.mjs                 2.05 kB │ gzip:   0.79 kB
+.output/server/_ssr/guide-BFW8qIJa.mjs                        2.54 kB │ gzip:   0.97 kB
+.output/server/_ssr/statut-WBd1_2J8.mjs                       2.99 kB │ gzip:   1.15 kB
+.output/server/_libs/class-variance-authority+clsx.mjs        3.17 kB │ gzip:   1.24 kB
+.output/server/_ssr/chat-DQ0ApDtC.mjs                         3.35 kB │ gzip:   1.12 kB
+.output/server/_ssr/securite-Ds5vplY-.mjs                     3.53 kB │ gzip:   1.47 kB
+.output/server/_tanstack-start-manifest_v-BD-04m8V.mjs        3.91 kB │ gzip:   0.81 kB
+.output/server/_ssr/profile-CJQskwk0.mjs                      3.94 kB │ gzip:   1.07 kB
+.output/server/_ssr/faq-S1hKbXn7.mjs                          4.51 kB │ gzip:   1.85 kB
+.output/server/_ssr/ssr.mjs                                   4.57 kB │ gzip:   1.93 kB
+.output/server/_ssr/routes-Cj3MkGrk.mjs                       5.13 kB │ gzip:   1.76 kB
+.output/server/_libs/@radix-ui/react-avatar+[...].mjs         5.38 kB │ gzip:   1.54 kB
+.output/server/_ssr/declarations-CuHNTdnI.mjs                 5.39 kB │ gzip:   1.42 kB
+.output/server/_ssr/mes-declarations-BwqcWpsl.mjs             5.48 kB │ gzip:   1.62 kB
+.output/server/_libs/radix-ui__react-tabs.mjs                 5.98 kB │ gzip:   1.74 kB
+.output/server/_ssr/signalement-C-O8-Huh.mjs                  6.24 kB │ gzip:   1.95 kB
+.output/server/_libs/tanstack__react-query.mjs                6.33 kB │ gzip:   1.78 kB
+.output/server/_ssr/auth-N2mA_a2B.mjs                         7.30 kB │ gzip:   2.19 kB
+.output/server/_libs/h3-v2+rou3+srvx.mjs                      9.87 kB │ gzip:   3.06 kB
+.output/server/_ssr/dashboard-DlMJlBxD.mjs                   10.73 kB │ gzip:   2.30 kB
+.output/server/_ssr/declarer-z1zfP9mH.mjs                    11.42 kB │ gzip:   2.43 kB
+.output/server/_libs/tanstack__history.mjs                   12.09 kB │ gzip:   3.48 kB
+.output/server/_libs/supabase__functions-js.mjs              12.54 kB │ gzip:   3.47 kB
+.output/server/index.mjs                                     14.18 kB │ gzip:   4.29 kB
+.output/server/_ssr/router-BBgODSE7.mjs                      15.18 kB │ gzip:   3.70 kB
+.output/server/_libs/lucide-react.mjs                        16.50 kB │ gzip:   3.65 kB
+.output/server/_libs/h3+rou3+srvx.mjs                        16.62 kB │ gzip:   4.80 kB
+.output/server/_libs/@radix-ui/react-radio-group+[...].mjs   23.43 kB │ gzip:   5.41 kB
+.output/server/_libs/sonner.mjs                              23.85 kB │ gzip:   5.19 kB
+.output/server/_ssr/AppShell-DO9CJPHn.mjs                    23.96 kB │ gzip:   5.44 kB
+.output/server/_libs/supabase__supabase-js.mjs               36.40 kB │ gzip:  10.70 kB
+.output/server/_libs/supabase__phoenix.mjs                   50.54 kB │ gzip:  12.76 kB
+.output/server/_ssr/server-DSPHpUz9.mjs                      58.07 kB │ gzip:  15.26 kB
+.output/server/_libs/tanstack__query-core.mjs                62.84 kB │ gzip:  13.50 kB
+.output/server/_libs/@radix-ui/react-dialog+[...].mjs        63.71 kB │ gzip:  15.17 kB
+.output/server/_libs/@radix-ui/react-accordion+[...].mjs     78.56 kB │ gzip:  16.67 kB
+.output/server/_libs/supabase__realtime-js+unenv.mjs         80.55 kB │ gzip:  20.52 kB
+.output/server/_libs/tailwind-merge.mjs                      88.13 kB │ gzip:  15.66 kB
+.output/server/_libs/supabase__postgrest-js.mjs             105.54 kB │ gzip:  21.68 kB
+.output/server/_libs/@supabase/storage-js+[...].mjs         119.62 kB │ gzip:  22.37 kB
+.output/server/_libs/@tanstack/router-core+[...].mjs        121.12 kB │ gzip:  25.50 kB
+.output/server/_libs/supabase__auth-js.mjs                  312.48 kB │ gzip:  63.70 kB
+.output/server/_libs/@tanstack/react-router+[...].mjs       643.34 kB │ gzip: 135.51 kB
+
+[32m✓ built in 5.49s[39m
+[90m[[90mnitro[90m][39m [36mℹ[39m Using auto generated worker name: [36mxtrem0350-cni-connect[39m
+[36mℹ[39m Generated [36m.output/server/wrangler.json[39m
+[36mℹ[39m Generated [36m.wrangler/deploy/config.json[39m
+[36mℹ[39m Generated [36m.output/public/_headers[39m
+[36mℹ[39m Generated [36m.output/nitro.json[39m
+
+[90m[[90mnitro[90m][39m [32m✔[39m You can preview this build using [36mnpx vite preview[39m
+[90m[[90mnitro[90m][39m [32m✔[39m You can deploy this build using [36mnpx nitro deploy --prebuilt[39m

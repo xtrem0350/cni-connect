@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
-import guideImage from "@/assets/images/guide.jpg";
 import { AppShell } from "@/components/AppShell";
+import { HeroBanner } from "@/components/HeroBanner";
 
 export const Route = createFileRoute("/guide")({
   head: () => ({
@@ -23,10 +23,7 @@ function GuidePage() {
   return (
     <AppShell>
       <div className="mx-auto max-w-3xl">
-        <div className="overflow-hidden rounded-2xl border border-border bg-card">
-          <img src={guideImage} alt="Guide Retrouve CNI" className="h-52 w-full object-cover" />
-        </div>
-        <h1 className="mt-4 text-2xl font-bold">Guide en 3 étapes</h1>
+        <HeroBanner title="Guide d'utilisation" subtitle="Comment utiliser l'application" />
         <div className="mt-6 grid gap-4 md:grid-cols-3">
           {steps.map((step, index) => (
             <div key={step.title} className="surface-card p-5">

@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
+import { HeroBanner } from "@/components/HeroBanner";
 import { SecurityBadge } from "@/components/SecurityBadge";
 import {
   Accordion,
@@ -52,11 +53,8 @@ const QUESTIONS = [
 function Faq() {
   return (
     <AppShell>
+      <HeroBanner title="Questions fréquentes" subtitle="Tout savoir sur Retrouve CNI" />
       <SecurityBadge />
-      <h1 className="mt-3 text-2xl font-bold">Questions fréquentes</h1>
-      <p className="mt-1 text-sm text-muted-foreground">
-        L'essentiel pour utiliser Retrouve CNI sereinement.
-      </p>
 
       <Accordion type="single" collapsible className="surface-card mt-6 divide-y divide-border px-5">
         {QUESTIONS.map((item, i) => (

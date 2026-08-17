@@ -3,6 +3,7 @@ import { FileSearch, Flag, HelpCircle, LayoutDashboard, ShieldCheck } from "luci
 
 const items = [
   { to: "/dashboard", label: "Tableau de bord", icon: LayoutDashboard },
+  { to: "/mes-declarations", label: "Mes Déclarations", icon: FileSearch },
   { to: "/declarer", label: "Déclarer", icon: FileSearch },
   { to: "/statut", label: "Statistiques", icon: ShieldCheck },
   { to: "/faq", label: "FAQ", icon: HelpCircle },

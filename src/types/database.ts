@@ -6,11 +6,14 @@ export type DeclarationType = "perdu" | "trouve";
 
 export type Profile = {
   id: string;
-  phone: string; // Numéro WhatsApp unique
-  status: DeclarationType | null; // Statut par défaut (perdu/trouvé)
-  is_admin: boolean;
-  created_at: string;
-  updated_at: string;
+  nom?: string | null;
+  phone?: string | null;
+  telephone?: string | null;
+  status?: DeclarationType | null;
+  is_admin?: boolean;
+  auth_code?: string | null;
+  created_at?: string;
+  updated_at?: string;
 };
 
 export type Declaration = {

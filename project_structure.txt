@@ -97,6 +97,16 @@ Structure du projet (avec glob)
 │   │   ├── 📄 AppShell.tsx
 │   │   ├── 📄 AdminPanel.tsx
 │   │   └── 📄 AdminModal.tsx
+│   ├── 📁 assets/
+│   │   ├── 📁 images/
+│   │   │   ├── 📄 tel.jpg
+│   │   │   ├── 📄 security.jpg
+│   │   │   ├── 📄 search.jpg
+│   │   │   ├── 📄 profile.png
+│   │   │   ├── 📄 logo.png
+│   │   │   ├── 📄 guide.jpg
+│   │   │   └── 📄 Accueil.jpg
+│   │   └── 📄 images
 │   ├── 📄 types
 │   ├── 📄 styles.css
 │   ├── 📄 start.ts
@@ -108,7 +118,8 @@ Structure du projet (avec glob)
 │   ├── 📄 lib
 │   ├── 📄 integrations
 │   ├── 📄 hooks
-│   └── 📄 components
+│   ├── 📄 components
+│   └── 📄 assets
 ├── 📁 doc/
 │   └── 📄 travaux.md
 ├── 📄 vite.config.ts

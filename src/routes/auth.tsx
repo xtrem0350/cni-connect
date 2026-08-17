@@ -1,8 +1,8 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import telImage from "@/assets/images/tel.jpg";
 import { AppShell } from "@/components/AppShell";
+import { HeroBanner } from "@/components/HeroBanner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
@@ -18,14 +18,18 @@ const getInitialStatus = (): "perdu" | "trouve" => {
   return value === "trouve" ? "trouve" : "perdu";
 };
 
+const pad = (value: number) => String(value).padStart(2, "0");
+
 function AuthPage() {
   const { user } = useAuth();
   const router = useRouter();
   const [step, setStep] = useState<"phone" | "code">("phone");
   const [phone, setPhone] = useState("");
   const [status, setStatus] = useState<"perdu" | "trouve">(getInitialStatus);
+  const [isNewUser, setIsNewUser] = useState<boolean | null>(null);
   const [generatedCode, setGeneratedCode] = useState("");
   const [enteredCode, setEnteredCode] = useState("");
+  const [codeFromDB, setCodeFromDB] = useState("");
   const [loading, setLoading] = useState(false);
 
   if (user) {
@@ -35,123 +39,185 @@ function AuthPage() {
 
   const generateCode = () => {
     const now = new Date();
-    const d = String(now.getDate()).padStart(2, "0");
-    const h = String(now.getHours()).padStart(2, "0");
-    const m = String(now.getMinutes()).padStart(2, "0");
-    const s = String(now.getSeconds()).padStart(2, "0");
-    const st = status === "perdu" ? "P" : "T";
-    return `${d}${h}${m}${s}${st}`;
-  };
-
-  const handleReceiveCode = () => {
-    if (!phone.trim()) {
-      toast.error("Entrez votre numéro WhatsApp");
-      return;
-    }
-
-    const code = generateCode();
+    const code = `${pad(now.getDate())}${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}${status === "perdu" ? "P" : "T"}`;
     setGeneratedCode(code);
-    sessionStorage.setItem("auth_code", code);
-    sessionStorage.setItem("auth_phone", phone);
-    sessionStorage.setItem("auth_status", status);
-    setStep("code");
-    toast.success(`Code: ${code}`);
+    setEnteredCode(code);
+    sessionStorage.setItem("new_phone", phone);
+    sessionStorage.setItem("new_code", code);
+    sessionStorage.setItem("new_status", status);
+    return code;
   };
 
-  const handleVerifyCode = async () => {
-    if (enteredCode !== generatedCode) {
-      toast.error("Code incorrect");
+  const checkPhone = async () => {
+    if (!phone.trim()) {
+      toast.error("Veuillez entrer votre numéro WhatsApp");
       return;
     }
 
     setLoading(true);
+
     try {
-      const { data: existing } = await supabase
+      const { data, error } = await supabase
         .from("profiles")
-        .select("id")
+        .select("auth_code, status, id, phone")
         .eq("phone", phone)
         .maybeSingle();
 
-      if (existing) {
-        await supabase
-          .from("profiles")
-          .update({ status, auth_code: enteredCode })
-          .eq("id", existing.id);
-      } else {
-        await supabase.from("profiles").insert({ phone, status, auth_code: enteredCode });
+      if (error) {
+        console.error("Erreur Supabase:", error);
+        toast.error("Erreur de vérification du numéro");
+        return;
       }
 
-      toast.success("Connexion réussie");
-      sessionStorage.clear();
-      router.navigate({ to: "/dashboard" });
+      if (data) {
+        setIsNewUser(false);
+        setCodeFromDB(String(data.auth_code ?? ""));
+        setStatus((data.status as "perdu" | "trouve") ?? status);
+        setGeneratedCode("");
+        setEnteredCode("");
+        setStep("code");
+        toast.info("Bienvenue ! Entrez votre code");
+        return;
+      }
+
+      const newCode = generateCode();
+      setIsNewUser(true);
+      setCodeFromDB("");
+      setGeneratedCode(newCode);
+      setEnteredCode(newCode);
+      setStatus(status);
+      setStep("code");
+      toast.info("Nouveau citoyen ! Code généré");
     } catch (e) {
+      console.error("Erreur:", e);
       toast.error("Erreur de connexion");
     } finally {
       setLoading(false);
     }
   };
 
-  if (step === "code") {
-    return (
-      <AppShell>
-        <div className="mx-auto max-w-md p-4">
-          <img src={telImage} alt="Vérification par téléphone" className="mb-4 h-36 w-full rounded-2xl object-cover" />
-          <h1 className="text-2xl font-bold">Votre code</h1>
-          <p className="text-sm text-muted-foreground">Notez ce code pour vos prochaines connexions</p>
-          <div className="mt-6 rounded-lg border-2 border-primary/20 bg-primary/10 p-6 text-center">
-            <div className="relative">
-              <p className="font-mono text-5xl font-bold tracking-widest text-primary">{generatedCode}</p>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="absolute right-0 top-0"
-                onClick={() => {
-                  if (!generatedCode) return;
-                  void navigator.clipboard.writeText(generatedCode);
-                  toast.success("Code copié !");
-                }}
-              >
-                📋 Copier
-              </Button>
-            </div>
-          </div>
-          <p className="mt-2 text-center text-xs text-muted-foreground">Format: JJHHMMSS + P/T</p>
-          <Input
-            className="mt-4"
-            placeholder="Saisir le code"
-            value={enteredCode}
-            onChange={(e) => setEnteredCode(e.target.value.toUpperCase())}
-            maxLength={9}
-          />
-          <Button className="mt-4 w-full" onClick={handleVerifyCode} disabled={loading}>
-            {loading ? "Vérification..." : "✅ Vérifier"}
-          </Button>
-          <Button variant="outline" className="mt-2 w-full" onClick={() => setStep("phone")}>
-            Retour
-          </Button>
-        </div>
-      </AppShell>
-    );
-  }
+  const handleConnect = async () => {
+    if (!phone.trim()) {
+      toast.error("Entrez votre numéro WhatsApp");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      if (isNewUser) {
+        if (!generatedCode) {
+          toast.error("Générez d’abord votre code");
+          return;
+        }
+
+        const { error } = await supabase.from("profiles").insert({
+          phone,
+          auth_code: generatedCode,
+          status,
+          is_admin: false,
+        });
+
+        if (error) {
+          toast.error(error.message);
+          return;
+        }
+      } else {
+        if (enteredCode !== codeFromDB) {
+          toast.error("Code incorrect");
+          return;
+        }
+      }
+
+      sessionStorage.removeItem("new_phone");
+      sessionStorage.removeItem("new_code");
+      sessionStorage.removeItem("new_status");
+      toast.success("Connexion réussie");
+      router.navigate({ to: "/dashboard" });
+    } catch {
+      toast.error("Erreur de connexion");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const codeInput = (
+    <Input
+      placeholder={isNewUser === false ? "Entrez votre code" : "Saisir le code"}
+      value={enteredCode}
+      onChange={(event) => setEnteredCode(event.target.value.toUpperCase())}
+      maxLength={9}
+    />
+  );
 
   return (
     <AppShell>
-      <div className="mx-auto max-w-md p-4">
-        <img src={telImage} alt="Connexion par téléphone" className="mb-4 h-36 w-full rounded-2xl object-cover" />
-        <h1 className="text-2xl font-bold">Connexion</h1>
-        <p className="text-sm text-muted-foreground">Entrez votre numéro WhatsApp</p>
-        <Input
-          className="mt-4"
-          placeholder="+225 01 23 45 67"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-        />
-        <p className="mt-3 rounded-lg bg-primary/5 p-3 text-sm text-muted-foreground">
-          Mode sélectionné : {status === "perdu" ? "📄 J'ai perdu un document" : "📄 J'ai trouvé un document"}
-        </p>
-        <Button className="mt-6 w-full" onClick={handleReceiveCode}>
-          📨 Recevoir mon code
-        </Button>
+      <div className="mx-auto max-w-md space-y-5 py-4">
+        <HeroBanner title="Identifiez-vous" subtitle="Entrez votre numéro WhatsApp" />
+
+        {step === "phone" ? (
+          <div className="space-y-4 rounded-2xl border border-border bg-card p-6 shadow-sm">
+            <p className="text-sm text-muted-foreground">Mode sélectionné : {status === "perdu" ? "📄 J'ai perdu" : "📄 J'ai trouvé"}</p>
+            <Input
+              placeholder="+225 01 23 45 67"
+              value={phone}
+              onChange={(event) => setPhone(event.target.value)}
+            />
+            <Button className="w-full" onClick={checkPhone} disabled={loading}>
+              {loading ? "Vérification..." : "Vérifier le numéro"}
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-4 rounded-2xl border border-border bg-card p-6 shadow-sm">
+            {isNewUser === false ? (
+              <>
+                <p className="text-sm text-muted-foreground">Si déjà inscrit, entrez votre code.</p>
+                {codeInput}
+              </>
+            ) : isNewUser === true ? (
+              <>
+                {!generatedCode ? (
+                  <>
+                    <p className="text-sm text-muted-foreground">Aucun compte trouvé pour ce numéro. Générez votre code d’identification.</p>
+                    <Button className="w-full" onClick={generateCode}>
+                      Générer mon code
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm text-muted-foreground">Votre code a été généré une seule fois.</p>
+                    <div className="rounded-xl border-2 border-primary/20 bg-primary/10 p-5 text-center">
+                      <p className="font-mono text-4xl font-bold tracking-[0.2em] text-primary">{generatedCode}</p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={async () => {
+                        if (!generatedCode) return;
+                        try {
+                          await navigator.clipboard.writeText(generatedCode);
+                          toast.success("Code copié !");
+                        } catch {
+                          toast.error("Copie impossible dans ce navigateur");
+                        }
+                      }}
+                    >
+                      Copier le code
+                    </Button>
+                    {codeInput}
+                  </>
+                )}
+              </>
+            ) : null}
+
+            <Button className="w-full" onClick={handleConnect} disabled={loading}>
+              {loading ? "Vérification..." : "S'identifier"}
+            </Button>
+            <Button variant="outline" className="w-full" onClick={() => setStep("phone")}>
+              Retour
+            </Button>
+          </div>
+        )}
       </div>
     </AppShell>
   );

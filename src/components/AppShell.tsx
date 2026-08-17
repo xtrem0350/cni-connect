@@ -1,4 +1,4 @@
-import { Link, useRouter } from "@tanstack/react-router";
+import { Link, useLocation, useRouter } from "@tanstack/react-router";
 import {
   FileSearch,
   Flag,
@@ -20,36 +20,37 @@ import { Button } from "@/components/ui/button";
 export function AppShell({ children }: { children: ReactNode }) {
   const { user, userStatus, isAdmin, signOut } = useAuth();
   const router = useRouter();
+  const location = useLocation();
   const [open, setOpen] = useState(false);
   const [adminModalOpen, setAdminModalOpen] = useState(false);
+  const isHomeRoute = location.pathname === "/";
 
   const navItems = useMemo(() => {
     const publicItems = [
       { to: "/", label: "Accueil", icon: LayoutDashboard },
       { to: "/faq", label: "FAQ", icon: HelpCircle },
-      { to: "/securite", label: "Sécurité", icon: ShieldCheck },
       { to: "/guide", label: "Guide", icon: FileSearch },
+      { to: "/securite", label: "Sécurité", icon: ShieldCheck },
     ];
 
     if (!user) return publicItems;
 
-    const connectedItems = [
-      { to: "/dashboard", label: "Tableau de bord", icon: LayoutDashboard },
-      {
-        to: "/declarations",
-        label: userStatus === "trouve" ? "Mes trouvailles" : "Mes déclarations",
-        icon: FileSearch,
-      },
-      { to: "/chat", label: "Chat", icon: MessageSquare },
-      { to: "/profile", label: "Profil", icon: User },
-      { to: "/signalement", label: "Signaler", icon: Flag },
-    ];
-
     if (isAdmin) {
-      connectedItems.splice(1, 0, { to: "/statut", label: "Statistiques", icon: ShieldCheck });
+      return [
+        { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+        { to: "/statut", label: "Statistiques", icon: ShieldCheck },
+        { to: "/signalements", label: "Signalements", icon: Flag },
+      ];
     }
 
-    return [...connectedItems, ...publicItems.filter((item) => item.to !== "/")];
+    return [
+      { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+      { to: "/declarer", label: "Déclarer", icon: FileSearch },
+      { to: "/declarations", label: "Mes déclarations", icon: FileSearch },
+      { to: "/chat", label: "Chat", icon: MessageSquare },
+      { to: "/signalement", label: "Signaler", icon: Flag },
+      { to: "/profile", label: "Profil", icon: User },
+    ];
   }, [isAdmin, user, userStatus]);
 
   return (
@@ -133,23 +134,14 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6">{children}</main>
 
-      <footer className="border-t border-border bg-card">
-        <div className="mx-auto flex w-full max-w-5xl flex-col gap-2 px-4 py-6 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-          <p>Retrouve CNI 2026 — Côte d'Ivoire</p>
-          <div className="flex flex-wrap items-center gap-4">
-            <span className="text-xs text-muted-foreground">Par Thierr Gogo</span>
-            <Link to="/securite" className="hover:text-foreground">
-              Sécurité
-            </Link>
-            <Link to="/faq" className="hover:text-foreground">
-              FAQ
-            </Link>
-            <Link to="/signalement" className="hover:text-foreground">
-              Signaler un abus
-            </Link>
+      {!isHomeRoute ? (
+        <footer className="border-t border-border bg-card/80 py-4">
+          <div className="mx-auto flex w-full max-w-5xl justify-center px-4 text-center text-sm text-muted-foreground">
+            <span className="md:hidden">Par Thierry Gogo &amp; Co</span>
+            <span className="hidden md:inline">Développé par Thierry Gogo &amp; Co</span>
           </div>
-        </div>
-      </footer>
+        </footer>
+      ) : null}
 
       <AdminModal open={adminModalOpen} onOpenChange={setAdminModalOpen} />
     </div>

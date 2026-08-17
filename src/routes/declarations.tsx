@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AppShell } from "@/components/AppShell";
+import { HeroBanner } from "@/components/HeroBanner";
 import { DocumentCard } from "@/components/DocumentCard";
 
 export const Route = createFileRoute("/declarations")({
@@ -17,10 +18,7 @@ function DeclarationsPage() {
   return (
     <AppShell>
       <div className="space-y-5">
-        <header>
-          <h1 className="text-2xl font-bold">Mes déclarations</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Consultez le statut des documents déclarés.</p>
-        </header>
+        <HeroBanner title="Mes déclarations" subtitle="Historique de vos pertes et trouvailles" />
 
         <Tabs defaultValue="actif" className="space-y-4">
           <TabsList>

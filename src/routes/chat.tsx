@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import guideImage from "@/assets/images/guide.jpg";
 import { AppShell } from "@/components/AppShell";
+import { HeroBanner } from "@/components/HeroBanner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ChatMessage } from "@/components/ChatMessage";
@@ -22,10 +22,9 @@ function ChatPage() {
   return (
     <AppShell>
       <div className="mx-auto max-w-2xl space-y-5">
+        <HeroBanner title="Chat sécurisé" subtitle="Échangez avec le citoyen concerné" />
         <header className="surface-card p-4">
-          <img src={guideImage} alt="Chat sécurisé" className="mb-4 h-28 w-full rounded-xl object-cover" />
-          <p className="text-sm text-muted-foreground">Match #42</p>
-          <h1 className="text-2xl font-bold">Chat sécurisé</h1>
+          <p className="mt-4 text-sm text-muted-foreground">Match #42</p>
         </header>
 
         <div className="surface-card space-y-3 p-4">

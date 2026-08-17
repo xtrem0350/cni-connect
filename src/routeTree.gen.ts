@@ -17,9 +17,11 @@ import { Route as DeclarationsRouteImport } from './routes/declarations'
 import { Route as DeclarerRouteImport } from './routes/declarer'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as GuideRouteImport } from './routes/guide'
+import { Route as MesDeclarationsRouteImport } from './routes/mes-declarations'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as SecuriteRouteImport } from './routes/securite'
 import { Route as SignalementRouteImport } from './routes/signalement'
+import { Route as SignalementsRouteImport } from './routes/signalements'
 import { Route as StatutRouteImport } from './routes/statut'
 
 const IndexRoute = IndexRouteImport.update({
@@ -62,6 +64,11 @@ const GuideRoute = GuideRouteImport.update({
   path: '/guide',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MesDeclarationsRoute = MesDeclarationsRouteImport.update({
+  id: '/mes-declarations',
+  path: '/mes-declarations',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -75,6 +82,11 @@ const SecuriteRoute = SecuriteRouteImport.update({
 const SignalementRoute = SignalementRouteImport.update({
   id: '/signalement',
   path: '/signalement',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignalementsRoute = SignalementsRouteImport.update({
+  id: '/signalements',
+  path: '/signalements',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StatutRoute = StatutRouteImport.update({
@@ -92,9 +104,11 @@ export interface FileRoutesByFullPath {
   '/declarer': typeof DeclarerRoute
   '/faq': typeof FaqRoute
   '/guide': typeof GuideRoute
+  '/mes-declarations': typeof MesDeclarationsRoute
   '/profile': typeof ProfileRoute
   '/securite': typeof SecuriteRoute
   '/signalement': typeof SignalementRoute
+  '/signalements': typeof SignalementsRoute
   '/statut': typeof StatutRoute
 }
 export interface FileRoutesByTo {
@@ -106,9 +120,11 @@ export interface FileRoutesByTo {
   '/declarer': typeof DeclarerRoute
   '/faq': typeof FaqRoute
   '/guide': typeof GuideRoute
+  '/mes-declarations': typeof MesDeclarationsRoute
   '/profile': typeof ProfileRoute
   '/securite': typeof SecuriteRoute
   '/signalement': typeof SignalementRoute
+  '/signalements': typeof SignalementsRoute
   '/statut': typeof StatutRoute
 }
 export interface FileRoutesById {
@@ -121,9 +137,11 @@ export interface FileRoutesById {
   '/declarer': typeof DeclarerRoute
   '/faq': typeof FaqRoute
   '/guide': typeof GuideRoute
+  '/mes-declarations': typeof MesDeclarationsRoute
   '/profile': typeof ProfileRoute
   '/securite': typeof SecuriteRoute
   '/signalement': typeof SignalementRoute
+  '/signalements': typeof SignalementsRoute
   '/statut': typeof StatutRoute
 }
 export interface FileRouteTypes {
@@ -137,9 +155,11 @@ export interface FileRouteTypes {
     | '/declarer'
     | '/faq'
     | '/guide'
+    | '/mes-declarations'
     | '/profile'
     | '/securite'
     | '/signalement'
+    | '/signalements'
     | '/statut'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -151,9 +171,11 @@ export interface FileRouteTypes {
     | '/declarer'
     | '/faq'
     | '/guide'
+    | '/mes-declarations'
     | '/profile'
     | '/securite'
     | '/signalement'
+    | '/signalements'
     | '/statut'
   id:
     | '__root__'
@@ -165,9 +187,11 @@ export interface FileRouteTypes {
     | '/declarer'
     | '/faq'
     | '/guide'
+    | '/mes-declarations'
     | '/profile'
     | '/securite'
     | '/signalement'
+    | '/signalements'
     | '/statut'
   fileRoutesById: FileRoutesById
 }
@@ -180,9 +204,11 @@ export interface RootRouteChildren {
   DeclarerRoute: typeof DeclarerRoute
   FaqRoute: typeof FaqRoute
   GuideRoute: typeof GuideRoute
+  MesDeclarationsRoute: typeof MesDeclarationsRoute
   ProfileRoute: typeof ProfileRoute
   SecuriteRoute: typeof SecuriteRoute
   SignalementRoute: typeof SignalementRoute
+  SignalementsRoute: typeof SignalementsRoute
   StatutRoute: typeof StatutRoute
 }
 
@@ -244,6 +270,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GuideRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/mes-declarations': {
+      id: '/mes-declarations'
+      path: '/mes-declarations'
+      fullPath: '/mes-declarations'
+      preLoaderRoute: typeof MesDeclarationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/profile': {
       id: '/profile'
       path: '/profile'
@@ -265,6 +298,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignalementRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/signalements': {
+      id: '/signalements'
+      path: '/signalements'
+      fullPath: '/signalements'
+      preLoaderRoute: typeof SignalementsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/statut': {
       id: '/statut'
       path: '/statut'
@@ -284,9 +324,11 @@ const rootRouteChildren: RootRouteChildren = {
   DeclarerRoute: DeclarerRoute,
   FaqRoute: FaqRoute,
   GuideRoute: GuideRoute,
+  MesDeclarationsRoute: MesDeclarationsRoute,
   ProfileRoute: ProfileRoute,
   SecuriteRoute: SecuriteRoute,
   SignalementRoute: SignalementRoute,
+  SignalementsRoute: SignalementsRoute,
   StatutRoute: StatutRoute,
 }
 export const routeTree = rootRouteImport

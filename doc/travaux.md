@@ -169,6 +169,27 @@ cni-connect/
 
 ---
 
+## ⚙️ Modifications 17 août 2026 — Flow citoyen + navigation métier
+
+### Authentification citoyenne
+- Le flux [src/routes/auth.tsx](src/routes/auth.tsx) vérifie d’abord la présence du numéro WhatsApp dans la table `profiles`.
+- Si le numéro existe, le citoyen passe directement en étape de validation du code existant ; sinon, le système propose la génération d’un code unique.
+- Le code est généré selon le format `JJHHMMSS + P/T`, puis pré-rempli automatiquement dans la zone de saisie pour un accès plus rapide.
+- Le bouton de copie du code est présent et la création de profil est limitée à l’inscription d’un nouveau citoyen.
+
+### Navigation et rôle
+- [src/components/AppShell.tsx](src/components/AppShell.tsx) affiche désormais un menu public, un menu citoyen et un menu Admin selon le rôle actuel.
+- Le bouton Admin reste visible même hors connexion, tandis que le bouton Quitter n’apparaît que pour les citoyens connectés.
+- Les routes [src/routes/signalements.tsx](src/routes/signalements.tsx) et [src/routes/statut.tsx](src/routes/statut.tsx) sont désormais strictement réservées aux Admin.
+
+### UX et uniformisation
+- Les pages utilisent désormais le même style de Hero Banner avec titres et sous-titres standardisés.
+- La page d’accueil [src/routes/index.tsx](src/routes/index.tsx) affiche les deux actions principales `J'AI PERDU` et `J'AI TROUVÉ`.
+- Le dashboard [src/routes/dashboard.tsx](src/routes/dashboard.tsx) affiche le WhatsApp et le code de validation associé au citoyen.
+- Les libellés de navigation et d’état ont été alignés sur le vocabulaire attendu : Citoyen et Admin.
+
+---
+
 ## ⚙️ Admin Accessible (Session 16 août - Continuation)
 
 ### Correction Apportée (16 août - Final)

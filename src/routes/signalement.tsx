@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
+import { HeroBanner } from "@/components/HeroBanner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -49,7 +50,7 @@ function Signalement() {
             Vous devez être connecté pour signaler un abus.
           </p>
           <Button asChild className="mt-6">
-            <Link to="/auth">Se connecter</Link>
+            <Link to="/auth">S'identifier</Link>
           </Button>
         </div>
       </AppShell>
@@ -83,8 +84,8 @@ function Signalement() {
   return (
     <AppShell>
       <div className="mx-auto max-w-lg">
-        <h1 className="text-2xl font-bold">Signaler un abus</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <HeroBanner title="Signaler un abus" subtitle="Signalez une fraude ou une arnaque" />
+        <p className="mt-4 text-sm text-muted-foreground">
           Chaque signalement est examiné par un humain. Réponse garantie sous 24h.
         </p>
 
