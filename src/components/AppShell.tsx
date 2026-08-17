@@ -1,22 +1,56 @@
 import { Link, useRouter } from "@tanstack/react-router";
-import { FileSearch, Flag, HelpCircle, LayoutDashboard, LogOut, Menu, ShieldCheck } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import {
+  FileSearch,
+  Flag,
+  HelpCircle,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  MessageSquare,
+  ShieldCheck,
+  User,
+} from "lucide-react";
+import { useMemo, useState, type ReactNode } from "react";
+import logoImage from "@/assets/images/logo.png";
 import { SecurityBanner } from "@/components/SecurityBadge";
+import { AdminModal } from "@/components/AdminModal";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 
-const NAV = [
-  { to: "/dashboard", label: "Tableau de bord", icon: LayoutDashboard },
-  { to: "/declarer", label: "Déclarer", icon: FileSearch },
-  { to: "/statut", label: "Statistiques", icon: ShieldCheck },
-  { to: "/faq", label: "FAQ", icon: HelpCircle },
-  { to: "/signalement", label: "Signaler", icon: Flag },
-] as const;
-
 export function AppShell({ children }: { children: ReactNode }) {
-  const { user, signOut } = useAuth();
+  const { user, userStatus, isAdmin, signOut } = useAuth();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [adminModalOpen, setAdminModalOpen] = useState(false);
+
+  const navItems = useMemo(() => {
+    const publicItems = [
+      { to: "/", label: "Accueil", icon: LayoutDashboard },
+      { to: "/faq", label: "FAQ", icon: HelpCircle },
+      { to: "/securite", label: "Sécurité", icon: ShieldCheck },
+      { to: "/guide", label: "Guide", icon: FileSearch },
+    ];
+
+    if (!user) return publicItems;
+
+    const connectedItems = [
+      { to: "/dashboard", label: "Tableau de bord", icon: LayoutDashboard },
+      {
+        to: "/declarations",
+        label: userStatus === "trouve" ? "Mes trouvailles" : "Mes déclarations",
+        icon: FileSearch,
+      },
+      { to: "/chat", label: "Chat", icon: MessageSquare },
+      { to: "/profile", label: "Profil", icon: User },
+      { to: "/signalement", label: "Signaler", icon: Flag },
+    ];
+
+    if (isAdmin) {
+      connectedItems.splice(1, 0, { to: "/statut", label: "Statistiques", icon: ShieldCheck });
+    }
+
+    return [...connectedItems, ...publicItems.filter((item) => item.to !== "/")];
+  }, [isAdmin, user, userStatus]);
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -24,16 +58,14 @@ export function AppShell({ children }: { children: ReactNode }) {
       <header className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur">
         <div className="mx-auto flex w-full max-w-5xl items-center gap-3 px-4 py-3">
           <Link to="/" className="flex items-center gap-2 font-extrabold tracking-tight">
-            <span className="grid h-9 w-9 place-items-center rounded-xl bg-primary text-primary-foreground">
-              <ShieldCheck className="h-5 w-5" aria-hidden />
-            </span>
+            <img src={logoImage} alt="Retrouve CNI" className="h-9 w-9 rounded-xl object-cover" />
             <span className="text-base">
               Retrouve <span className="text-primary">CNI</span>
             </span>
           </Link>
 
           <nav className="ml-auto hidden items-center gap-1 md:flex">
-            {NAV.map((item) => (
+            {navItems.map((item) => (
               <Link
                 key={item.to}
                 to={item.to}
@@ -46,6 +78,16 @@ export function AppShell({ children }: { children: ReactNode }) {
           </nav>
 
           <div className="ml-auto flex items-center gap-2 md:ml-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setAdminModalOpen(true)}
+              className="text-muted-foreground hover:text-primary"
+              title="Administration"
+            >
+              <ShieldCheck className="h-4 w-4" aria-hidden />
+              <span className="hidden sm:inline">Admin</span>
+            </Button>
             {user ? (
               <Button
                 variant="ghost"
@@ -58,11 +100,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <LogOut className="h-4 w-4" aria-hidden />
                 <span className="hidden sm:inline">Quitter</span>
               </Button>
-            ) : (
-              <Button asChild size="sm">
-                <Link to="/auth">Se connecter</Link>
-              </Button>
-            )}
+            ) : null}
             <Button
               variant="outline"
               size="icon"
@@ -77,7 +115,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
         {open && (
           <nav className="border-t border-border bg-card px-4 pb-3 md:hidden">
-            {NAV.map((item) => (
+            {navItems.map((item) => (
               <Link
                 key={item.to}
                 to={item.to}
@@ -98,7 +136,8 @@ export function AppShell({ children }: { children: ReactNode }) {
       <footer className="border-t border-border bg-card">
         <div className="mx-auto flex w-full max-w-5xl flex-col gap-2 px-4 py-6 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <p>Retrouve CNI 2026 — Côte d'Ivoire</p>
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-wrap items-center gap-4">
+            <span className="text-xs text-muted-foreground">Par Thierr Gogo</span>
             <Link to="/securite" className="hover:text-foreground">
               Sécurité
             </Link>
@@ -111,6 +150,8 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </div>
       </footer>
+
+      <AdminModal open={adminModalOpen} onOpenChange={setAdminModalOpen} />
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell } from "@/components/AppShell";
 import { SecurityBadge } from "@/components/SecurityBadge";
+import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase";
 
 export const Route = createFileRoute("/statut")({
@@ -31,6 +32,21 @@ interface Stats {
 }
 
 function Statut() {
+  const { user, isAdmin } = useAuth();
+
+  if (!user || !isAdmin) {
+    return (
+      <AppShell>
+        <div className="mx-auto max-w-md py-12 text-center">
+          <h2 className="text-xl font-bold">⛔ Accès réservé aux administrateurs</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Vous devez disposer des droits d’administration pour consulter les statistiques.
+          </p>
+        </div>
+      </AppShell>
+    );
+  }
+
   const { data, isLoading, error } = useQuery({
     queryKey: ["stats"],
     queryFn: async () => {

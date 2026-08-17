@@ -10,33 +10,180 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as ChatRouteImport } from './routes/chat'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as DeclarationsRouteImport } from './routes/declarations'
+import { Route as DeclarerRouteImport } from './routes/declarer'
+import { Route as FaqRouteImport } from './routes/faq'
+import { Route as GuideRouteImport } from './routes/guide'
+import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as SecuriteRouteImport } from './routes/securite'
+import { Route as SignalementRouteImport } from './routes/signalement'
+import { Route as StatutRouteImport } from './routes/statut'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChatRoute = ChatRouteImport.update({
+  id: '/chat',
+  path: '/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DeclarationsRoute = DeclarationsRouteImport.update({
+  id: '/declarations',
+  path: '/declarations',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DeclarerRoute = DeclarerRouteImport.update({
+  id: '/declarer',
+  path: '/declarer',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FaqRoute = FaqRouteImport.update({
+  id: '/faq',
+  path: '/faq',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GuideRoute = GuideRouteImport.update({
+  id: '/guide',
+  path: '/guide',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SecuriteRoute = SecuriteRouteImport.update({
+  id: '/securite',
+  path: '/securite',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignalementRoute = SignalementRouteImport.update({
+  id: '/signalement',
+  path: '/signalement',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StatutRoute = StatutRouteImport.update({
+  id: '/statut',
+  path: '/statut',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/chat': typeof ChatRoute
+  '/dashboard': typeof DashboardRoute
+  '/declarations': typeof DeclarationsRoute
+  '/declarer': typeof DeclarerRoute
+  '/faq': typeof FaqRoute
+  '/guide': typeof GuideRoute
+  '/profile': typeof ProfileRoute
+  '/securite': typeof SecuriteRoute
+  '/signalement': typeof SignalementRoute
+  '/statut': typeof StatutRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/chat': typeof ChatRoute
+  '/dashboard': typeof DashboardRoute
+  '/declarations': typeof DeclarationsRoute
+  '/declarer': typeof DeclarerRoute
+  '/faq': typeof FaqRoute
+  '/guide': typeof GuideRoute
+  '/profile': typeof ProfileRoute
+  '/securite': typeof SecuriteRoute
+  '/signalement': typeof SignalementRoute
+  '/statut': typeof StatutRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/chat': typeof ChatRoute
+  '/dashboard': typeof DashboardRoute
+  '/declarations': typeof DeclarationsRoute
+  '/declarer': typeof DeclarerRoute
+  '/faq': typeof FaqRoute
+  '/guide': typeof GuideRoute
+  '/profile': typeof ProfileRoute
+  '/securite': typeof SecuriteRoute
+  '/signalement': typeof SignalementRoute
+  '/statut': typeof StatutRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/chat'
+    | '/dashboard'
+    | '/declarations'
+    | '/declarer'
+    | '/faq'
+    | '/guide'
+    | '/profile'
+    | '/securite'
+    | '/signalement'
+    | '/statut'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auth'
+    | '/chat'
+    | '/dashboard'
+    | '/declarations'
+    | '/declarer'
+    | '/faq'
+    | '/guide'
+    | '/profile'
+    | '/securite'
+    | '/signalement'
+    | '/statut'
+  id:
+    | '__root__'
+    | '/'
+    | '/auth'
+    | '/chat'
+    | '/dashboard'
+    | '/declarations'
+    | '/declarer'
+    | '/faq'
+    | '/guide'
+    | '/profile'
+    | '/securite'
+    | '/signalement'
+    | '/statut'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthRoute: typeof AuthRoute
+  ChatRoute: typeof ChatRoute
+  DashboardRoute: typeof DashboardRoute
+  DeclarationsRoute: typeof DeclarationsRoute
+  DeclarerRoute: typeof DeclarerRoute
+  FaqRoute: typeof FaqRoute
+  GuideRoute: typeof GuideRoute
+  ProfileRoute: typeof ProfileRoute
+  SecuriteRoute: typeof SecuriteRoute
+  SignalementRoute: typeof SignalementRoute
+  StatutRoute: typeof StatutRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +195,99 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/chat': {
+      id: '/chat'
+      path: '/chat'
+      fullPath: '/chat'
+      preLoaderRoute: typeof ChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/declarations': {
+      id: '/declarations'
+      path: '/declarations'
+      fullPath: '/declarations'
+      preLoaderRoute: typeof DeclarationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/declarer': {
+      id: '/declarer'
+      path: '/declarer'
+      fullPath: '/declarer'
+      preLoaderRoute: typeof DeclarerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/faq': {
+      id: '/faq'
+      path: '/faq'
+      fullPath: '/faq'
+      preLoaderRoute: typeof FaqRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/guide': {
+      id: '/guide'
+      path: '/guide'
+      fullPath: '/guide'
+      preLoaderRoute: typeof GuideRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/securite': {
+      id: '/securite'
+      path: '/securite'
+      fullPath: '/securite'
+      preLoaderRoute: typeof SecuriteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/signalement': {
+      id: '/signalement'
+      path: '/signalement'
+      fullPath: '/signalement'
+      preLoaderRoute: typeof SignalementRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/statut': {
+      id: '/statut'
+      path: '/statut'
+      fullPath: '/statut'
+      preLoaderRoute: typeof StatutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthRoute: AuthRoute,
+  ChatRoute: ChatRoute,
+  DashboardRoute: DashboardRoute,
+  DeclarationsRoute: DeclarationsRoute,
+  DeclarerRoute: DeclarerRoute,
+  FaqRoute: FaqRoute,
+  GuideRoute: GuideRoute,
+  ProfileRoute: ProfileRoute,
+  SecuriteRoute: SecuriteRoute,
+  SignalementRoute: SignalementRoute,
+  StatutRoute: StatutRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

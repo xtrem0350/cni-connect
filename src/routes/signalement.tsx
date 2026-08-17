@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
@@ -25,7 +25,7 @@ export const Route = createFileRoute("/signalement")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: Signalement;
+  component: Signalement,
 });
 
 const RAISONS = [
@@ -40,15 +40,36 @@ function Signalement() {
   const [loading, setLoading] = useState(false);
   const [envoye, setEnvoye] = useState(false);
 
+  if (!user) {
+    return (
+      <AppShell>
+        <div className="mx-auto max-w-md py-12 text-center">
+          <h2 className="text-xl font-bold">🔒 Connexion requise</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Vous devez être connecté pour signaler un abus.
+          </p>
+          <Button asChild className="mt-6">
+            <Link to="/auth">Se connecter</Link>
+          </Button>
+        </div>
+      </AppShell>
+    );
+  }
+
   async function envoyer(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!user) {
+      toast.error("Connexion requise", { description: "Vous devez être connecté pour signaler." });
+      return;
+    }
+
     const form = new FormData(event.currentTarget);
     setLoading(true);
     const { error } = await supabase.from("signalements").insert({
       raison,
       details: String(form.get("details") ?? ""),
       email_contact: String(form.get("email") ?? ""),
-      user_id: user?.id ?? null,
+      user_id: user.id,
     });
     setLoading(false);
     if (error) {

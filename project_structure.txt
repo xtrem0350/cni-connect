@@ -1,0 +1,130 @@
+Structure du projet (avec glob)
+================================
+
+├── 📁 supabase/
+│   ├── 📄 schema.sql
+│   └── 📄 migration_2026_08_16_whatsapp_auth.sql
+├── 📁 src/
+│   ├── 📁 types/
+│   │   └── 📄 database.ts
+│   ├── 📁 services/
+│   │   ├── 📄 paymentService.ts
+│   │   ├── 📄 matchService.ts
+│   │   ├── 📄 declarationService.ts
+│   │   ├── 📄 chatService.ts
+│   │   └── 📄 authService.ts
+│   ├── 📁 routes/
+│   │   ├── 📄 __root.tsx
+│   │   ├── 📄 statut.tsx
+│   │   ├── 📄 signalement.tsx
+│   │   ├── 📄 securite.tsx
+│   │   ├── 📄 README.md
+│   │   ├── 📄 profile.tsx
+│   │   ├── 📄 index.tsx
+│   │   ├── 📄 guide.tsx
+│   │   ├── 📄 faq.tsx
+│   │   ├── 📄 declarer.tsx
+│   │   ├── 📄 declarations.tsx
+│   │   ├── 📄 dashboard.tsx
+│   │   ├── 📄 chat.tsx
+│   │   └── 📄 auth.tsx
+│   ├── 📁 lib/
+│   │   ├── 📄 utils.ts
+│   │   ├── 📄 lovable-error-reporting.ts
+│   │   ├── 📄 error-page.ts
+│   │   ├── 📄 error-capture.ts
+│   │   └── 📄 documents.ts
+│   ├── 📁 integrations/
+│   │   └── 📄 supabase.ts
+│   ├── 📁 hooks/
+│   │   ├── 📄 useAuth.tsx
+│   │   └── 📄 use-mobile.tsx
+│   ├── 📁 components/
+│   │   ├── 📁 ui/
+│   │   │   ├── 📄 tooltip.tsx
+│   │   │   ├── 📄 toggle.tsx
+│   │   │   ├── 📄 toggle-group.tsx
+│   │   │   ├── 📄 textarea.tsx
+│   │   │   ├── 📄 tabs.tsx
+│   │   │   ├── 📄 table.tsx
+│   │   │   ├── 📄 switch.tsx
+│   │   │   ├── 📄 sonner.tsx
+│   │   │   ├── 📄 slider.tsx
+│   │   │   ├── 📄 skeleton.tsx
+│   │   │   ├── 📄 sidebar.tsx
+│   │   │   ├── 📄 sheet.tsx
+│   │   │   ├── 📄 separator.tsx
+│   │   │   ├── 📄 select.tsx
+│   │   │   ├── 📄 scroll-area.tsx
+│   │   │   ├── 📄 resizable.tsx
+│   │   │   ├── 📄 radio-group.tsx
+│   │   │   ├── 📄 progress.tsx
+│   │   │   ├── 📄 popover.tsx
+│   │   │   ├── 📄 pagination.tsx
+│   │   │   ├── 📄 navigation-menu.tsx
+│   │   │   ├── 📄 menubar.tsx
+│   │   │   ├── 📄 label.tsx
+│   │   │   ├── 📄 input.tsx
+│   │   │   ├── 📄 input-otp.tsx
+│   │   │   ├── 📄 hover-card.tsx
+│   │   │   ├── 📄 form.tsx
+│   │   │   ├── 📄 dropdown-menu.tsx
+│   │   │   ├── 📄 drawer.tsx
+│   │   │   ├── 📄 dialog.tsx
+│   │   │   ├── 📄 context-menu.tsx
+│   │   │   ├── 📄 command.tsx
+│   │   │   ├── 📄 collapsible.tsx
+│   │   │   ├── 📄 checkbox.tsx
+│   │   │   ├── 📄 chart.tsx
+│   │   │   ├── 📄 carousel.tsx
+│   │   │   ├── 📄 card.tsx
+│   │   │   ├── 📄 calendar.tsx
+│   │   │   ├── 📄 button.tsx
+│   │   │   ├── 📄 breadcrumb.tsx
+│   │   │   ├── 📄 badge.tsx
+│   │   │   ├── 📄 avatar.tsx
+│   │   │   ├── 📄 aspect-ratio.tsx
+│   │   │   ├── 📄 alert.tsx
+│   │   │   ├── 📄 alert-dialog.tsx
+│   │   │   └── 📄 accordion.tsx
+│   │   ├── 📄 ui
+│   │   ├── 📄 StatusBadge.tsx
+│   │   ├── 📄 SecurityBadge.tsx
+│   │   ├── 📄 Navigation.tsx
+│   │   ├── 📄 LoadingSpinner.tsx
+│   │   ├── 📄 DocumentCard.tsx
+│   │   ├── 📄 ChatMessage.tsx
+│   │   ├── 📄 AppShell.tsx
+│   │   ├── 📄 AdminPanel.tsx
+│   │   └── 📄 AdminModal.tsx
+│   ├── 📄 types
+│   ├── 📄 styles.css
+│   ├── 📄 start.ts
+│   ├── 📄 services
+│   ├── 📄 server.ts
+│   ├── 📄 routeTree.gen.ts
+│   ├── 📄 routes
+│   ├── 📄 router.tsx
+│   ├── 📄 lib
+│   ├── 📄 integrations
+│   ├── 📄 hooks
+│   └── 📄 components
+├── 📁 doc/
+│   └── 📄 travaux.md
+├── 📄 vite.config.ts
+├── 📄 tsconfig.json
+├── 📄 supabase
+├── 📄 src
+├── 📄 README.md
+├── 📄 package.json
+├── 📄 package-lock.json
+├── 📄 node
+├── 📄 liste.mjs
+├── 📄 IMPLEMENTATION_FINALE.md
+├── 📄 eslint.config.js
+├── 📄 doc
+├── 📄 components.json
+├── 📄 cd
+├── 📄 bunfig.toml
+├── 📄 bun.lock
+└── 📄 AGENTS.md
