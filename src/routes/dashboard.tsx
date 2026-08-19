@@ -116,10 +116,14 @@ function DashboardPage() {
 
         <div className="flex flex-wrap gap-3">
           <Button asChild>
-            <Link to="/declarer?type=perdu">📄 Déclarer une perte</Link>
+            <Link to="/declarer" search={{ type: "perdu" }}>
+              📄 Déclarer une perte
+            </Link>
           </Button>
           <Button asChild variant="outline">
-            <Link to="/declarer?type=trouve">📄 Déclarer une trouvaille</Link>
+            <Link to="/declarer" search={{ type: "trouve" }}>
+              📄 Déclarer une trouvaille
+            </Link>
           </Button>
         </div>
 

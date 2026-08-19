@@ -52,7 +52,7 @@ export const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
     ref,
   ) => {
     const initialCountry =
-      countries.find((country) => country.code === defaultCountry) ?? countries[0];
+      countries.find((country) => country.code === defaultCountry) ?? countries[0]!;
     const [selectedCountry, setSelectedCountry] = useState<Country>(initialCountry);
 
     useEffect(() => {
@@ -83,7 +83,7 @@ export const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
         <Select
           value={selectedCountry.code}
           onValueChange={handleCountryChange}
-          disabled={disabled}
+          disabled={disabled ?? false}
         >
           <SelectTrigger className="w-[140px] flex-shrink-0">
             <SelectValue>

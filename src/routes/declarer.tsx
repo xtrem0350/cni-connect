@@ -5,11 +5,20 @@ import { HeroBanner } from "@/components/HeroBanner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useAuth } from "@/hooks/useAuth";
 import { createDeclaration, updateDeclaration } from "@/services/declarationService";
 import { supabase } from "@/integrations/supabase";
 
 export const Route = createFileRoute("/declarer")({
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { type?: "perdu" | "trouve"; id?: string } => ({
+    ...(search['type'] === "trouve" || search['type'] === "perdu"
+      ? { type: search['type'] as "perdu" | "trouve" }
+      : {}),
+    ...(typeof search['id'] === "string" ? { id: search['id'] } : {}),
+  }),
   head: () => ({
     meta: [
       { title: "Déclarer un document — Retrouve CNI 2026" },
