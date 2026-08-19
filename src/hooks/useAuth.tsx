@@ -11,6 +11,7 @@ interface AuthState {
   session: Session | null;
   loading: boolean;
   signOut: () => Promise<void>;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthState>({
@@ -21,7 +22,9 @@ const AuthContext = createContext<AuthState>({
   session: null,
   loading: true,
   signOut: async () => {},
+  logout: async () => {},
 });
+
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);

@@ -106,30 +106,52 @@ function AuthPage() {
 
     setLoading(true);
     try {
+      // Email technique dérivé du numéro WhatsApp (Phone signups désactivé)
+      const email = `${formattedPhone.replace("+", "")}@cni-connect.ci`;
+      const password = isNewUser ? generatedCode : codeFromDB;
+
       if (isNewUser) {
-        const { error: insertError } = await supabase.from("profiles").insert({
-          phone: formattedPhone,
-          status,
-          citizen_code: generatedCode,
-          auth_code: enteredCode,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
+        const { error: signUpError } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              phone: formattedPhone,
+              status,
+              citizen_code: generatedCode,
+            },
+          },
         });
 
-        if (insertError) {
-          console.error("Erreur lors de la création du profil:", insertError);
-          if (insertError.code === "23505") {
+        if (signUpError) {
+          console.error("SignUp error:", signUpError);
+          if (signUpError.message.toLowerCase().includes("already registered")) {
             toast.error("Ce numéro est déjà enregistré");
           } else {
-            toast.error("Erreur lors de la création du compte");
+            toast.error(signUpError.message);
           }
           return;
         }
+
+        const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+        if (signInError) {
+          console.error("SignIn error:", signInError);
+          toast.error("Compte créé. Confirmation email requise : désactivez-la dans Supabase.");
+          return;
+        }
+
+        toast.success("Compte créé avec succès");
+      } else {
+        const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+        if (signInError) {
+          console.error("SignIn error:", signInError);
+          toast.error("Erreur de connexion");
+          return;
+        }
+
+        toast.success("Connexion réussie");
       }
 
-      toast.success(isNewUser ? "Compte créé avec succès" : "Connexion réussie");
-      sessionStorage.setItem("user_phone", formattedPhone);
-      sessionStorage.setItem("user_status", status);
       router.navigate({ to: "/dashboard" });
     } catch (error) {
       console.error("Erreur de connexion:", error);
@@ -138,6 +160,7 @@ function AuthPage() {
       setLoading(false);
     }
   };
+
 
   const codeInput = (
     <Input
