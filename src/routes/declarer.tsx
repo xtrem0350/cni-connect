@@ -11,6 +11,10 @@ import { createDeclaration, updateDeclaration } from "@/services/declarationServ
 import { supabase } from "@/integrations/supabase";
 
 export const Route = createFileRoute("/declarer")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    type: search['type'] === "trouve" ? ("trouve" as const) : ("perdu" as const),
+    id: typeof search['id'] === "string" ? search['id'] : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Déclarer un document — Retrouve CNI 2026" },
