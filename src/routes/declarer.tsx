@@ -5,7 +5,6 @@ import { HeroBanner } from "@/components/HeroBanner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useAuth } from "@/hooks/useAuth";
 import { createDeclaration, updateDeclaration } from "@/services/declarationService";
 import { supabase } from "@/integrations/supabase";
@@ -45,9 +44,14 @@ function DeclarerPage() {
     if (!user) return;
 
     const params = new URLSearchParams(window.location.search);
+    const requestedType = params.get("type");
+    if (requestedType === "perdu" || requestedType === "trouve") {
+      setType(requestedType);
+    } else {
+      setType((userProfile?.status as "perdu" | "trouve" | null) ?? "perdu");
+    }
     const declarationId = params.get("id");
     if (!declarationId) {
-      setType((userProfile?.status as "perdu" | "trouve" | null) ?? "perdu");
       return;
     }
 
@@ -143,18 +147,8 @@ function DeclarerPage() {
             </RadioGroup>
           </div>
 
-          <div className="space-y-3">
-            <Label className="text-sm font-semibold">Je déclare que le document est</Label>
-            <RadioGroup value={type} onValueChange={(value) => setType(value as "perdu" | "trouve")} className="flex gap-4">
-              <div className="flex items-center gap-2">
-                <RadioGroupItem id="perdu" value="perdu" />
-                <Label htmlFor="perdu">Perdu</Label>
-              </div>
-              <div className="flex items-center gap-2">
-                <RadioGroupItem id="trouve" value="trouve" />
-                <Label htmlFor="trouve">Trouvé</Label>
-              </div>
-            </RadioGroup>
+          <div className="rounded-lg border border-border bg-muted/30 p-3 text-sm text-muted-foreground">
+            Type de déclaration : <span className="font-semibold text-foreground">{type === "perdu" ? "Document perdu" : "Document trouvé"}</span>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">

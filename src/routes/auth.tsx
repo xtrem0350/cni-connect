@@ -6,7 +6,7 @@ import { HeroBanner } from "@/components/HeroBanner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase";
+import { sendOTP, verifyOTP } from "@/services/authService";
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
@@ -18,8 +18,6 @@ const getInitialStatus = (): "perdu" | "trouve" => {
   return value === "trouve" ? "trouve" : "perdu";
 };
 
-const pad = (value: number) => String(value).padStart(2, "0");
-
 function AuthPage() {
   const { user } = useAuth();
   const router = useRouter();
@@ -27,26 +25,13 @@ function AuthPage() {
   const [phone, setPhone] = useState("");
   const [status, setStatus] = useState<"perdu" | "trouve">(getInitialStatus);
   const [isNewUser, setIsNewUser] = useState<boolean | null>(null);
-  const [generatedCode, setGeneratedCode] = useState("");
   const [enteredCode, setEnteredCode] = useState("");
-  const [codeFromDB, setCodeFromDB] = useState("");
   const [loading, setLoading] = useState(false);
 
   if (user) {
     router.navigate({ to: "/dashboard" });
     return null;
   }
-
-  const generateCode = () => {
-    const now = new Date();
-    const code = `${pad(now.getDate())}${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}${status === "perdu" ? "P" : "T"}`;
-    setGeneratedCode(code);
-    setEnteredCode(code);
-    sessionStorage.setItem("new_phone", phone);
-    sessionStorage.setItem("new_code", code);
-    sessionStorage.setItem("new_status", status);
-    return code;
-  };
 
   const checkPhone = async () => {
     if (!phone.trim()) {
@@ -56,44 +41,15 @@ function AuthPage() {
 
     setLoading(true);
 
-    try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("auth_code, status, id, phone")
-        .eq("phone", phone)
-        .maybeSingle();
-
-      if (error) {
-        console.error("Erreur Supabase:", error);
-        toast.error("Erreur de vérification du numéro");
-        return;
-      }
-
-      if (data) {
-        setIsNewUser(false);
-        setCodeFromDB(String(data.auth_code ?? ""));
-        setStatus((data.status as "perdu" | "trouve") ?? status);
-        setGeneratedCode("");
-        setEnteredCode("");
-        setStep("code");
-        toast.info("Bienvenue ! Entrez votre code");
-        return;
-      }
-
-      const newCode = generateCode();
-      setIsNewUser(true);
-      setCodeFromDB("");
-      setGeneratedCode(newCode);
-      setEnteredCode(newCode);
-      setStatus(status);
-      setStep("code");
-      toast.info("Nouveau citoyen ! Code généré");
-    } catch (e) {
-      console.error("Erreur:", e);
-      toast.error("Erreur de connexion");
-    } finally {
-      setLoading(false);
+    const result = await sendOTP(phone.trim());
+    setLoading(false);
+    if (!result.success) {
+      toast.error("Envoi du code impossible", { description: result.error });
+      return;
     }
+    setIsNewUser(true);
+    setStep("code");
+    toast.success("Code envoyé", { description: "Consultez votre SMS de vérification." });
   };
 
   const handleConnect = async () => {
@@ -105,33 +61,12 @@ function AuthPage() {
     setLoading(true);
 
     try {
-      if (isNewUser) {
-        if (!generatedCode) {
-          toast.error("Générez d’abord votre code");
-          return;
-        }
-
-        const { error } = await supabase.from("profiles").insert({
-          phone,
-          auth_code: generatedCode,
-          status,
-          is_admin: false,
-        });
-
-        if (error) {
-          toast.error(error.message);
-          return;
-        }
-      } else {
-        if (enteredCode !== codeFromDB) {
-          toast.error("Code incorrect");
-          return;
-        }
+      const result = await verifyOTP(phone.trim(), enteredCode.trim(), status);
+      if (!result.success) {
+        toast.error("Code incorrect", { description: result.error });
+        return;
       }
 
-      sessionStorage.removeItem("new_phone");
-      sessionStorage.removeItem("new_code");
-      sessionStorage.removeItem("new_status");
       toast.success("Connexion réussie");
       router.navigate({ to: "/dashboard" });
     } catch {
@@ -176,37 +111,8 @@ function AuthPage() {
               </>
             ) : isNewUser === true ? (
               <>
-                {!generatedCode ? (
-                  <>
-                    <p className="text-sm text-muted-foreground">Aucun compte trouvé pour ce numéro. Générez votre code d’identification.</p>
-                    <Button className="w-full" onClick={generateCode}>
-                      Générer mon code
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <p className="text-sm text-muted-foreground">Votre code a été généré une seule fois.</p>
-                    <div className="rounded-xl border-2 border-primary/20 bg-primary/10 p-5 text-center">
-                      <p className="font-mono text-4xl font-bold tracking-[0.2em] text-primary">{generatedCode}</p>
-                    </div>
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      onClick={async () => {
-                        if (!generatedCode) return;
-                        try {
-                          await navigator.clipboard.writeText(generatedCode);
-                          toast.success("Code copié !");
-                        } catch {
-                          toast.error("Copie impossible dans ce navigateur");
-                        }
-                      }}
-                    >
-                      Copier le code
-                    </Button>
-                    {codeInput}
-                  </>
-                )}
+                <p className="text-sm text-muted-foreground">Un code de vérification vient d’être envoyé à ce numéro.</p>
+                {codeInput}
               </>
             ) : null}
 

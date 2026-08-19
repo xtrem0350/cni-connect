@@ -1,10 +1,11 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { HeroBanner } from "@/components/HeroBanner";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ChatMessage } from "@/components/ChatMessage";
+import { Card, CardContent } from "@/components/ui/card";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase";
 
 export const Route = createFileRoute("/chat")({
   head: () => ({
@@ -17,42 +18,54 @@ export const Route = createFileRoute("/chat")({
 });
 
 function ChatPage() {
-  const [code, setCode] = useState("");
+  const { user } = useAuth();
+  const [matches, setMatches] = useState<Array<{ id: string; statut: string }>>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+    void (async () => {
+      const { data: declarations } = await supabase.from("declarations").select("id").eq("user_id", user.id);
+      const ids = (declarations ?? []).map(({ id }) => id);
+      if (ids.length === 0) {
+        setMatches([]);
+        setLoading(false);
+        return;
+      }
+      const { data } = await supabase
+        .from("matchs")
+        .select("id, statut")
+        .or(`declaration_perdu_id.in.(${ids.join(",")}),declaration_trouve_id.in.(${ids.join(",")})`)
+        .neq("statut", "clos");
+      setMatches(data ?? []);
+      setLoading(false);
+    })();
+  }, [user]);
 
   return (
     <AppShell>
       <div className="mx-auto max-w-2xl space-y-5">
-        <HeroBanner title="Chat sécurisé" subtitle="Échangez avec le citoyen concerné" />
-        <header className="surface-card p-4">
-          <p className="mt-4 text-sm text-muted-foreground">Match #42</p>
-        </header>
-
-        <div className="surface-card space-y-3 p-4">
-          <ChatMessage sender="them" text="Le document a été identifié. Vérifions le code de validation." time="09:45" />
-          <ChatMessage sender="me" text="J’ai bien reçu le document. Voici mon code : 2147" time="09:46" />
-        </div>
-
-        <div className="surface-card space-y-3 p-4">
-          <div className="flex gap-2">
-            <Button type="button" variant="secondary">
-              Envoyer mon code
-            </Button>
-            <Button type="button" variant="outline">
-              Valider le code
-            </Button>
+        <HeroBanner title="Chat sécurisé" subtitle={`${matches.length} correspondance${matches.length > 1 ? "s" : ""} détectée${matches.length > 1 ? "s" : ""}`} />
+        {loading ? <p className="text-center text-sm text-muted-foreground">Chargement...</p> : matches.length === 0 ? (
+          <div className="surface-card p-6 text-center text-sm text-muted-foreground">Aucun match en cours.</div>
+        ) : (
+          <div className="space-y-3">
+            {matches.map((match) => (
+              <Card key={match.id}>
+                <CardContent className="flex items-center justify-between gap-4 p-4">
+                  <div>
+                    <p className="font-semibold">Match détecté</p>
+                    <p className="text-sm text-muted-foreground">Statut : {match.statut}</p>
+                  </div>
+                  <Link to="/chat" search={{ match: match.id }}><Button size="sm">Ouvrir</Button></Link>
+                </CardContent>
+              </Card>
+            ))}
           </div>
-
-          <div className="flex gap-2">
-            <Input
-              value={code}
-              onChange={(event) => setCode(event.target.value)}
-              placeholder="Entrez le code 4 chiffres"
-              inputMode="numeric"
-              maxLength={4}
-            />
-            <Button type="button">OK</Button>
-          </div>
-        </div>
+        )}
       </div>
     </AppShell>
   );

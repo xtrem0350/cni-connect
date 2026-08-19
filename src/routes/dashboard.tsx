@@ -36,18 +36,25 @@ function DashboardPage() {
     if (!user) return;
 
     void (async () => {
-      const [{ data: declarationData }, { data: matchData }] = await Promise.all([
-        supabase
-          .from("declarations")
-          .select("id, type, type_document, statut, lieu_perte_trouvaille, date_naissance")
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: false })
-          .limit(3),
-        supabase.from("matchs").select("id, declaration_perdu_id, declaration_trouve_id").then(({ data }) => ({ data: data ?? [] })),
-      ]);
-
+      const { data: declarationData } = await supabase
+        .from("declarations")
+        .select("id, type, type_document, statut, lieu_perte_trouvaille, date_naissance")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(3);
       setDeclarations((declarationData as DeclarationSummary[] | null) ?? []);
 
+      const { data: allUserDeclarations } = await supabase.from("declarations").select("id").eq("user_id", user.id);
+      const declarationIds = (allUserDeclarations ?? []).map(({ id }) => id);
+      if (declarationIds.length === 0) {
+        setMatchCount(0);
+        return;
+      }
+
+      const { data: matchData } = await supabase
+        .from("matchs")
+        .select("id, declaration_perdu_id, declaration_trouve_id")
+        .or(`declaration_perdu_id.in.(${declarationIds.join(",")}),declaration_trouve_id.in.(${declarationIds.join(",")})`);
       const userMatchCount = (matchData ?? []).filter((match) => {
         const declarationIds = [match.declaration_perdu_id, match.declaration_trouve_id];
         return declarationIds.some((id) => id !== undefined && id !== null);

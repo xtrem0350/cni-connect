@@ -1,7 +1,16 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useRouter } from "@tanstack/react-router";
 import { FileSearch, Flag, HelpCircle, LayoutDashboard, ShieldCheck } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
 
-const items = [
+const publicItems = [
+  { to: "/", label: "Accueil", icon: LayoutDashboard },
+  { to: "/faq", label: "FAQ", icon: HelpCircle },
+  { to: "/guide", label: "Guide", icon: FileSearch },
+  { to: "/securite", label: "Sécurité", icon: ShieldCheck },
+] as const;
+
+const citizenItems = [
   { to: "/dashboard", label: "Tableau de bord", icon: LayoutDashboard },
   { to: "/mes-declarations", label: "Mes Déclarations", icon: FileSearch },
   { to: "/declarer", label: "Déclarer", icon: FileSearch },
@@ -11,6 +20,10 @@ const items = [
 ] as const;
 
 export function Navigation() {
+  const { user, isAdmin, signOut } = useAuth();
+  const router = useRouter();
+  const items = user ? (isAdmin ? [...publicItems, citizenItems[0], citizenItems[3]] : [...publicItems, ...citizenItems]) : publicItems;
+
   return (
     <nav className="flex flex-wrap gap-2">
       {items.map(({ to, label, icon: Icon }) => (
@@ -24,6 +37,7 @@ export function Navigation() {
           {label}
         </Link>
       ))}
+      {user ? <Button variant="ghost" size="sm" onClick={async () => { await signOut(); router.navigate({ to: "/" }); }}>Quitter</Button> : null}
     </nav>
   );
 }
