@@ -64,7 +64,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const { data, error } = await supabase
       .from("profiles")
-      .select("id, nom, telephone, phone, status, auth_code, is_admin, created_at, updated_at")
+      .select(
+        "id, nom, telephone, phone, status, auth_code, citizen_code, is_admin, created_at, updated_at",
+      )
       .eq("phone", phone)
       .maybeSingle();
 
@@ -88,12 +90,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const profile = data as Profile;
     console.log("✅ [useAuth] Profil chargé:", profile);
-    setUserProfile(profile);
+    console.log("📋 [useAuth] Structure complète du profil:", {
+      ...profile,
+      hasNom: Boolean(profile.nom),
+      hasTelephone: Boolean(profile.telephone),
+      phoneValue: profile.phone,
+    });
+    const profileToStore: Profile = {
+      ...profile,
+      nom: profile.nom ?? "",
+      telephone: profile.telephone ?? profile.phone,
+    };
+    const displayPhone = profileToStore.telephone ?? profileToStore.phone ?? phone;
+    console.log("📞 [useAuth] Téléphone affiché:", displayPhone);
+    setUserProfile(profileToStore);
     setUser({ id: profile.id, phone: profile.phone ?? phone });
     setUserStatus((profile.status as DeclarationType | null) ?? null);
     setIsAdmin(Boolean(profile.is_admin));
     setNeedsAuth(false);
-    window.sessionStorage.setItem("citizen_profile", JSON.stringify(profile));
+    window.sessionStorage.setItem("citizen_profile", JSON.stringify(profileToStore));
     console.log("💾 [useAuth] citizen_profile sauvegardé");
     setLoading(false);
     console.log("🏁 [useAuth] Fin chargement, loading = false");

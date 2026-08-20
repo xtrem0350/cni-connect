@@ -5,6 +5,7 @@ import { AppShell } from "@/components/AppShell";
 import { HeroBanner } from "@/components/HeroBanner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { PhoneInput } from "@/components/PhoneInput";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase";
@@ -25,6 +26,7 @@ function AuthPage() {
   const router = useRouter();
   const [step, setStep] = useState<"phone" | "code">("phone");
   const [phone, setPhone] = useState("+225");
+  const [nom, setNom] = useState("");
   const [status, setStatus] = useState<"perdu" | "trouve">(getInitialStatus);
   const [isNewUser, setIsNewUser] = useState<boolean | null>(null);
   const [generatedCode, setGeneratedCode] = useState("");
@@ -149,6 +151,8 @@ function AuthPage() {
         console.log("📝 [auth] Création nouveau profil...");
         const { error: insertError } = await supabase.from("profiles").insert({
           phone: formattedPhone,
+          nom: nom.trim() || null,
+          telephone: formattedPhone,
           status,
           citizen_code: generatedCode,
           auth_code: enteredCode,
@@ -217,6 +221,15 @@ function AuthPage() {
               </>
             ) : isNewUser === true ? (
               <>
+                <div className="space-y-2">
+                  <Label htmlFor="nom">Nom (optionnel)</Label>
+                  <Input
+                    id="nom"
+                    placeholder="Votre nom complet"
+                    value={nom}
+                    onChange={(event) => setNom(event.target.value)}
+                  />
+                </div>
                 <p className="text-sm text-muted-foreground">
                   Notez ce code pour vos prochaines connexions.
                 </p>

@@ -88,7 +88,8 @@ function DashboardPage() {
     })();
   }, [userId]);
 
-  const userPhone = userProfile?.phone ?? userProfile?.telephone ?? "Numéro non renseigné";
+  const displayName = userProfile?.nom?.trim() || userProfile?.phone || "Citoyen";
+  const displayPhone = userProfile?.telephone ?? userProfile?.phone ?? "Numéro non renseigné";
   const userCode = userProfile?.auth_code ?? "Code non renseigné";
   const greeting = new Date().getHours() < 18 ? "Bonjour" : "Bonsoir";
 
@@ -137,8 +138,9 @@ function DashboardPage() {
 
         <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
           <h1 className="text-2xl font-bold text-foreground">
-            {greeting}, {userPhone}
+            {greeting}, {displayName}
           </h1>
+          <p className="mt-1 text-sm text-muted-foreground">Téléphone : {displayPhone}</p>
           <p className="mt-2 text-sm font-medium text-muted-foreground">
             Code : <span className="font-mono text-base text-foreground">{userCode}</span>
           </p>

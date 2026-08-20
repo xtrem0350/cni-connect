@@ -12,6 +12,7 @@ export type Profile = {
   status?: DeclarationType | null;
   is_admin?: boolean;
   auth_code?: string | null;
+  citizen_code?: string | null;
   created_at?: string;
   updated_at?: string;
 };
