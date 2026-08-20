@@ -1,12 +1,14 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowRight, FileText, MessageSquareText, ShieldCheck } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { HeroBanner } from "@/components/HeroBanner";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase";
+
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
