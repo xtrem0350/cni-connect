@@ -1,21 +1,28 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase";
 import type { DeclarationType, Profile } from "@/types/database";
 
+export type CitizenUser = {
+  id: string;
+  phone: string;
+};
+
 interface AuthState {
-  user: User | null;
+  user: CitizenUser | null;
+  userId: string | null;
   userProfile: Profile | null;
   userStatus: DeclarationType | null;
   isAdmin: boolean;
-  session: Session | null;
+  session: null;
   loading: boolean;
   signOut: () => Promise<void>;
   logout: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthState>({
   user: null,
+  userId: null,
   userProfile: null,
   userStatus: null,
   isAdmin: false,
@@ -23,82 +30,75 @@ const AuthContext = createContext<AuthState>({
   loading: true,
   signOut: async () => {},
   logout: async () => {},
+  refreshProfile: async () => {},
 });
 
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<CitizenUser | null>(null);
   const [userProfile, setUserProfile] = useState<Profile | null>(null);
   const [userStatus, setUserStatus] = useState<DeclarationType | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const applyUserProfile = async (userId: string | undefined) => {
-      if (!userId) {
-        setUserProfile(null);
-        setUserStatus(null);
-        setIsAdmin(false);
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("id, nom, telephone, phone, status, auth_code, is_admin, created_at, updated_at")
-        .eq("id", userId)
-        .maybeSingle();
-
-      if (error || !data) {
-        setUserProfile(null);
-        setUserStatus(null);
-        setIsAdmin(false);
-        return;
-      }
-
-      const profile = data as Profile;
-      setUserProfile(profile);
-      setUserStatus((profile.status as DeclarationType | null) ?? null);
-      setIsAdmin(Boolean(profile.is_admin));
-    };
-
-    const handleSession = async (nextSession: Session | null) => {
-      setSession(nextSession);
-      if (nextSession?.user) {
-        await applyUserProfile(nextSession.user.id);
-      } else {
-        setUserProfile(null);
-        setUserStatus(null);
-        setIsAdmin(false);
-      }
+  const refreshProfile = async () => {
+    const phone = window.sessionStorage.getItem("user_phone");
+    if (!phone) {
       setLoading(false);
-    };
+      return;
+    }
 
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, nextSession) => {
-      void handleSession(nextSession);
-    });
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("id, nom, telephone, phone, status, auth_code, is_admin, created_at, updated_at")
+      .eq("phone", phone)
+      .maybeSingle();
 
-    void supabase.auth.getSession().then(({ data }) => {
-      void handleSession(data.session);
-    });
+    if (error || !data) {
+      setUser(null);
+      setUserProfile(null);
+      setUserStatus(null);
+      setIsAdmin(false);
+      setLoading(false);
+      return;
+    }
 
-    return () => sub.subscription.unsubscribe();
+    const profile = data as Profile;
+    setUserProfile(profile);
+    setUser({ id: profile.id, phone: profile.phone ?? phone });
+    setUserStatus((profile.status as DeclarationType | null) ?? null);
+    setIsAdmin(Boolean(profile.is_admin));
+    window.sessionStorage.setItem("citizen_profile", JSON.stringify(profile));
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    void refreshProfile();
   }, []);
+
+  const handleSignOut = async () => {
+    window.sessionStorage.removeItem("user_phone");
+    window.sessionStorage.removeItem("citizen_profile");
+    window.sessionStorage.removeItem("user_status");
+    setUser(null);
+    setUserProfile(null);
+    setUserStatus(null);
+    setIsAdmin(false);
+  };
 
   return (
     <AuthContext.Provider
       value={{
-        user: session?.user ?? null,
+        user,
+        userId: user?.id ?? null,
         userProfile,
         userStatus,
         isAdmin,
-        session,
+        session: null,
         loading,
-        signOut: async () => {
-          setUserProfile(null);
-          setUserStatus(null);
-          setIsAdmin(false);
-          await supabase.auth.signOut();
-        },
+        signOut: handleSignOut,
+        logout: handleSignOut,
+        refreshProfile,
       }}
     >
       {children}

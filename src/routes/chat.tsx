@@ -60,7 +60,7 @@ function ChatPage() {
                     <p className="font-semibold">Match détecté</p>
                     <p className="text-sm text-muted-foreground">Statut : {match.statut}</p>
                   </div>
-                  <Link to="/chat" search={{ match: match.id }}><Button size="sm">Ouvrir</Button></Link>
+                  <Link to="/chat/$matchId" params={{ matchId: match.id }}><Button size="sm">Ouvrir</Button></Link>
                 </CardContent>
               </Card>
             ))}

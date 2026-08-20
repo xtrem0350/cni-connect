@@ -23,6 +23,7 @@ import { Route as SecuriteRouteImport } from './routes/securite'
 import { Route as SignalementRouteImport } from './routes/signalement'
 import { Route as SignalementsRouteImport } from './routes/signalements'
 import { Route as StatutRouteImport } from './routes/statut'
+import { Route as ChatMatchIdRouteImport } from './routes/chat/$matchId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -94,11 +95,16 @@ const StatutRoute = StatutRouteImport.update({
   path: '/statut',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ChatMatchIdRoute = ChatMatchIdRouteImport.update({
+  id: '/$matchId',
+  path: '/$matchId',
+  getParentRoute: () => ChatRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/chat': typeof ChatRoute
+  '/chat': typeof ChatRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/declarations': typeof DeclarationsRoute
   '/declarer': typeof DeclarerRoute
@@ -110,11 +116,12 @@ export interface FileRoutesByFullPath {
   '/signalement': typeof SignalementRoute
   '/signalements': typeof SignalementsRoute
   '/statut': typeof StatutRoute
+  '/chat/$matchId': typeof ChatMatchIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/chat': typeof ChatRoute
+  '/chat': typeof ChatRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/declarations': typeof DeclarationsRoute
   '/declarer': typeof DeclarerRoute
@@ -126,12 +133,13 @@ export interface FileRoutesByTo {
   '/signalement': typeof SignalementRoute
   '/signalements': typeof SignalementsRoute
   '/statut': typeof StatutRoute
+  '/chat/$matchId': typeof ChatMatchIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/chat': typeof ChatRoute
+  '/chat': typeof ChatRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/declarations': typeof DeclarationsRoute
   '/declarer': typeof DeclarerRoute
@@ -143,6 +151,7 @@ export interface FileRoutesById {
   '/signalement': typeof SignalementRoute
   '/signalements': typeof SignalementsRoute
   '/statut': typeof StatutRoute
+  '/chat/$matchId': typeof ChatMatchIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -161,6 +170,7 @@ export interface FileRouteTypes {
     | '/signalement'
     | '/signalements'
     | '/statut'
+    | '/chat/$matchId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -177,6 +187,7 @@ export interface FileRouteTypes {
     | '/signalement'
     | '/signalements'
     | '/statut'
+    | '/chat/$matchId'
   id:
     | '__root__'
     | '/'
@@ -193,12 +204,13 @@ export interface FileRouteTypes {
     | '/signalement'
     | '/signalements'
     | '/statut'
+    | '/chat/$matchId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
-  ChatRoute: typeof ChatRoute
+  ChatRoute: typeof ChatRouteWithChildren
   DashboardRoute: typeof DashboardRoute
   DeclarationsRoute: typeof DeclarationsRoute
   DeclarerRoute: typeof DeclarerRoute
@@ -312,13 +324,30 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StatutRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/chat/$matchId': {
+      id: '/chat/$matchId'
+      path: '/$matchId'
+      fullPath: '/chat/$matchId'
+      preLoaderRoute: typeof ChatMatchIdRouteImport
+      parentRoute: typeof ChatRoute
+    }
   }
 }
+
+interface ChatRouteChildren {
+  ChatMatchIdRoute: typeof ChatMatchIdRoute
+}
+
+const ChatRouteChildren: ChatRouteChildren = {
+  ChatMatchIdRoute: ChatMatchIdRoute,
+}
+
+const ChatRouteWithChildren = ChatRoute._addFileChildren(ChatRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
-  ChatRoute: ChatRoute,
+  ChatRoute: ChatRouteWithChildren,
   DashboardRoute: DashboardRoute,
   DeclarationsRoute: DeclarationsRoute,
   DeclarerRoute: DeclarerRoute,

@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { HeroBanner } from "@/components/HeroBanner";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useAuth } from "@/hooks/useAuth";
 import { createDeclaration, updateDeclaration } from "@/services/declarationService";
 import { supabase } from "@/integrations/supabase";
+import { hashNumero } from "@/lib/documents";
 
 export const Route = createFileRoute("/declarer")({
   validateSearch: (
@@ -33,7 +35,7 @@ const maxBirthDate = "2026-12-31";
 
 function DeclarerPage() {
   const navigate = useNavigate();
-  const { user, userProfile } = useAuth();
+  const { userId, userProfile } = useAuth();
   const [type, setType] = useState<"perdu" | "trouve">("perdu");
   const [documentType, setDocumentType] = useState("CNI");
   const [loading, setLoading] = useState(false);
@@ -50,7 +52,7 @@ function DeclarerPage() {
   });
 
   useEffect(() => {
-    if (!user) return;
+    if (!userId) return;
 
     const params = new URLSearchParams(window.location.search);
     const requestedType = params.get("type");
@@ -69,7 +71,7 @@ function DeclarerPage() {
         .from("declarations")
         .select("*")
         .eq("id", declarationId)
-        .eq("user_id", user.id)
+        .eq("user_id", userId)
         .maybeSingle();
 
       if (!data) return;
@@ -88,27 +90,42 @@ function DeclarerPage() {
         communePerte: data.lieu_perte_trouvaille ?? "",
       });
     })();
-  }, [user, userProfile]);
+  }, [userId, userProfile]);
 
   const handleChange = (field: keyof typeof form, value: string) => {
     setForm((current) => ({ ...current, [field]: value }));
   };
 
+  const isFormValid =
+    form.dateNaissance.trim() !== "" &&
+    form.lieuNaissance.trim() !== "" &&
+    form.dateDelivrance.trim() !== "" &&
+    documentType.trim() !== "" &&
+    form.numeroPiece.trim() !== "";
+
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!user) return;
-    if (!form.dateNaissance || !form.lieuNaissance || !form.dateDelivrance || !form.typeDocument) {
+    if (!userId) return;
+    if (
+      !form.dateNaissance ||
+      !form.lieuNaissance ||
+      !form.dateDelivrance ||
+      !form.typeDocument ||
+      !form.numeroPiece.trim()
+    ) {
+      toast.error("Veuillez compléter tous les champs obligatoires");
       return;
     }
 
     setLoading(true);
 
     try {
+      const numeroHash = await hashNumero(form.numeroPiece);
       const payload = {
-        user_id: user.id,
+        user_id: userId,
         type,
-        type_document: form.typeDocument,
-        numero_hash: form.numeroPiece || "",
+        type_document: documentType,
+        numero_hash: numeroHash,
         nom_porteur: form.nom || form.prenom || null,
         date_naissance: form.dateNaissance,
         lieu_naissance: form.lieuNaissance,
@@ -118,12 +135,17 @@ function DeclarerPage() {
       };
 
       if (editingId) {
-        await updateDeclaration(editingId, payload);
+        const { error } = await updateDeclaration(editingId, payload);
+        if (error) throw error;
       } else {
-        await createDeclaration(payload);
+        const { error } = await createDeclaration(payload);
+        if (error) throw error;
       }
 
       navigate({ to: "/dashboard" });
+    } catch (error) {
+      console.error("Erreur lors de l'enregistrement:", error);
+      toast.error("Impossible d'enregistrer la déclaration");
     } finally {
       setLoading(false);
     }
@@ -212,6 +234,7 @@ function DeclarerPage() {
                 placeholder="Numéro du document"
                 value={form.numeroPiece}
                 onChange={(event) => handleChange("numeroPiece", event.target.value)}
+                required
               />
             </div>
             <div className="space-y-1.5">
@@ -231,7 +254,7 @@ function DeclarerPage() {
             </div>
           </div>
 
-          <Button type="submit" className="w-full" disabled={loading || !user}>
+          <Button type="submit" className="w-full" disabled={loading || !userId || !isFormValid}>
             {loading ? "Déclaration en cours..." : editingId ? "Mettre à jour" : "Déclarer"}
           </Button>
         </form>

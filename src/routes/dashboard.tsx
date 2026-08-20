@@ -28,23 +28,27 @@ type DeclarationSummary = {
 };
 
 function DashboardPage() {
-  const { user, userProfile } = useAuth();
+  const { userId, userProfile, userStatus, loading } = useAuth();
   const [declarations, setDeclarations] = useState<DeclarationSummary[]>([]);
   const [matchCount, setMatchCount] = useState(0);
 
   useEffect(() => {
-    if (!user) return;
+    if (!userId) {
+      setDeclarations([]);
+      setMatchCount(0);
+      return;
+    }
 
     void (async () => {
       const { data: declarationData } = await supabase
         .from("declarations")
         .select("id, type, type_document, statut, lieu_perte_trouvaille, date_naissance")
-        .eq("user_id", user.id)
+        .eq("user_id", userId)
         .order("created_at", { ascending: false })
         .limit(3);
       setDeclarations((declarationData as DeclarationSummary[] | null) ?? []);
 
-      const { data: allUserDeclarations } = await supabase.from("declarations").select("id").eq("user_id", user.id);
+      const { data: allUserDeclarations } = await supabase.from("declarations").select("id").eq("user_id", userId);
       const declarationIds = (allUserDeclarations ?? []).map(({ id }) => id);
       if (declarationIds.length === 0) {
         setMatchCount(0);
@@ -55,16 +59,13 @@ function DashboardPage() {
         .from("matchs")
         .select("id, declaration_perdu_id, declaration_trouve_id")
         .or(`declaration_perdu_id.in.(${declarationIds.join(",")}),declaration_trouve_id.in.(${declarationIds.join(",")})`);
-      const userMatchCount = (matchData ?? []).filter((match) => {
-        const declarationIds = [match.declaration_perdu_id, match.declaration_trouve_id];
-        return declarationIds.some((id) => id !== undefined && id !== null);
-      }).length;
+      const userMatchCount = matchData?.length ?? 0;
 
       setMatchCount(userMatchCount);
     })();
-  }, [user]);
+  }, [userId]);
 
-  const userPhone = userProfile?.phone ?? userProfile?.telephone ?? user?.phone ?? "Numéro non renseigné";
+  const userPhone = userProfile?.phone ?? userProfile?.telephone ?? "Numéro non renseigné";
   const userCode = userProfile?.auth_code ?? "Code non renseigné";
   const greeting = new Date().getHours() < 18 ? "Bonjour" : "Bonsoir";
 
@@ -72,6 +73,32 @@ function DashboardPage() {
     () => declarations.filter((item) => item.statut === "actif" || !item.statut).length,
     [declarations],
   );
+
+  if (loading) {
+    return (
+      <AppShell>
+        <p className="py-12 text-center text-sm text-muted-foreground">Chargement...</p>
+      </AppShell>
+    );
+  }
+
+  if (!userProfile) {
+    return (
+      <AppShell>
+        <div className="space-y-4 py-12 text-center">
+          <p className="text-sm text-muted-foreground">Veuillez vous connecter.</p>
+          <Button asChild>
+            <Link to="/auth">Se connecter</Link>
+          </Button>
+        </div>
+      </AppShell>
+    );
+  }
+
+  const isPerdu = userStatus !== "trouve";
+  const statusLabel = isPerdu ? "📄 Perdu" : "📄 Trouvé";
+  const declarationType = isPerdu ? "perdu" : "trouve";
+  const declarationLabel = isPerdu ? "📄 Déclarer une perte" : "📄 Déclarer une trouvaille";
 
   return (
     <AppShell>
@@ -85,6 +112,7 @@ function DashboardPage() {
           <p className="mt-2 text-sm font-medium text-muted-foreground">
             Code : <span className="font-mono text-base text-foreground">{userCode}</span>
           </p>
+          <p className="mt-1 text-sm text-muted-foreground">Statut : {statusLabel}</p>
         </div>
 
         <div className="grid gap-4 md:grid-cols-3">
@@ -115,14 +143,17 @@ function DashboardPage() {
         </div>
 
         <div className="flex flex-wrap gap-3">
-          <Button asChild>
-            <Link to="/declarer" search={{ type: "perdu" }}>
-              📄 Déclarer une perte
+          <Button
+            asChild
+            className={isPerdu ? "bg-red-600 text-white hover:bg-red-700" : "bg-green-600 text-white hover:bg-green-700"}
+          >
+            <Link to="/declarer" search={{ type: declarationType }}>
+              {declarationLabel}
             </Link>
           </Button>
           <Button asChild variant="outline">
-            <Link to="/declarer" search={{ type: "trouve" }}>
-              📄 Déclarer une trouvaille
+            <Link to="/mes-declarations">
+              📋 Voir mes déclarations
             </Link>
           </Button>
         </div>

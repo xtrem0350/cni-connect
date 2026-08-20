@@ -6,6 +6,8 @@ Structure du projet (avec glob)
 │   ├── 📄 migration_2026_08_17_citizen_auth.sql
 │   └── 📄 migration_2026_08_16_whatsapp_auth_old.sql
 ├── 📁 src/
+│   ├── 📁 utils/
+│   │   └── 📄 phone.ts
 │   ├── 📁 types/
 │   │   └── 📄 database.ts
 │   ├── 📁 services/
@@ -93,6 +95,7 @@ Structure du projet (avec glob)
 │   │   ├── 📄 ui
 │   │   ├── 📄 StatusBadge.tsx
 │   │   ├── 📄 SecurityBadge.tsx
+│   │   ├── 📄 PhoneInput.tsx
 │   │   ├── 📄 Navigation.tsx
 │   │   ├── 📄 LoadingSpinner.tsx
 │   │   ├── 📄 HeroBanner.tsx
@@ -111,6 +114,7 @@ Structure du projet (avec glob)
 │   │   │   ├── 📄 guide.jpg
 │   │   │   └── 📄 Accueil.jpg
 │   │   └── 📄 images
+│   ├── 📄 utils
 │   ├── 📄 types
 │   ├── 📄 styles.css
 │   ├── 📄 start.ts
