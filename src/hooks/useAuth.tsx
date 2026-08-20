@@ -15,6 +15,7 @@ interface AuthState {
   isAdmin: boolean;
   session: null;
   loading: boolean;
+  needsAuth: boolean;
   signOut: () => Promise<void>;
   logout: () => Promise<void>;
   refreshProfile: () => Promise<void>;
@@ -28,6 +29,7 @@ const AuthContext = createContext<AuthState>({
   isAdmin: false,
   session: null,
   loading: true,
+  needsAuth: false,
   signOut: async () => {},
   logout: async () => {},
   refreshProfile: async () => {},
@@ -40,13 +42,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [userStatus, setUserStatus] = useState<DeclarationType | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [needsAuth, setNeedsAuth] = useState(false);
 
   const refreshProfile = async () => {
     const phone = window.sessionStorage.getItem("user_phone");
     if (!phone) {
+      setNeedsAuth(true);
       setLoading(false);
       return;
     }
+
+    setNeedsAuth(false);
 
     const { data, error } = await supabase
       .from("profiles")
@@ -68,6 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser({ id: profile.id, phone: profile.phone ?? phone });
     setUserStatus((profile.status as DeclarationType | null) ?? null);
     setIsAdmin(Boolean(profile.is_admin));
+    setNeedsAuth(false);
     window.sessionStorage.setItem("citizen_profile", JSON.stringify(profile));
     setLoading(false);
   };
@@ -84,6 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUserProfile(null);
     setUserStatus(null);
     setIsAdmin(false);
+    setNeedsAuth(true);
   };
 
   return (
@@ -96,6 +104,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAdmin,
         session: null,
         loading,
+        needsAuth,
         signOut: handleSignOut,
         logout: handleSignOut,
         refreshProfile,

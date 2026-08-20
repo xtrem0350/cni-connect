@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { ArrowRight, FileText, MessageSquareText, ShieldCheck } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/AppShell";
@@ -28,9 +28,16 @@ type DeclarationSummary = {
 };
 
 function DashboardPage() {
-  const { userId, userProfile, userStatus, loading } = useAuth();
+  const { userId, userProfile, userStatus, loading, needsAuth } = useAuth();
+  const router = useRouter();
   const [declarations, setDeclarations] = useState<DeclarationSummary[]>([]);
   const [matchCount, setMatchCount] = useState(0);
+
+  useEffect(() => {
+    if (!loading && needsAuth) {
+      void router.navigate({ to: "/auth" });
+    }
+  }, [loading, needsAuth, router]);
 
   useEffect(() => {
     if (!userId) {
@@ -80,6 +87,10 @@ function DashboardPage() {
         <p className="py-12 text-center text-sm text-muted-foreground">Chargement...</p>
       </AppShell>
     );
+  }
+
+  if (needsAuth) {
+    return null;
   }
 
   if (!userProfile) {
