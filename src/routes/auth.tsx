@@ -149,14 +149,28 @@ function AuthPage() {
     try {
       if (isNewUser) {
         console.log("📝 [auth] Création nouveau profil...");
-        const { error: insertError } = await supabase.from("profiles").insert({
+        const profilePayload = {
           phone: formattedPhone,
           nom: nom.trim() || null,
           telephone: formattedPhone,
           status,
           citizen_code: generatedCode,
           auth_code: enteredCode,
-        });
+        };
+        let { error: insertError } = await supabase.from("profiles").insert(profilePayload);
+
+        if (insertError?.code === "PGRST204") {
+          console.warn(
+            "⚠️ [auth] Colonnes nom/telephone absentes, nouvelle tentative avec le schéma historique",
+          );
+          const fallbackInsert = await supabase.from("profiles").insert({
+            phone: formattedPhone,
+            status,
+            citizen_code: generatedCode,
+            auth_code: enteredCode,
+          });
+          insertError = fallbackInsert.error;
+        }
 
         if (insertError) {
           console.error("❌ [auth] ERREUR INSERT:", insertError);

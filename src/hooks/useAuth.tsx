@@ -62,13 +62,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setNeedsAuth(false);
     console.log("📡 [useAuth] Requête Supabase pour phone:", phone);
 
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from("profiles")
       .select(
         "id, nom, telephone, phone, status, auth_code, citizen_code, is_admin, created_at, updated_at",
       )
       .eq("phone", phone)
       .maybeSingle();
+
+    if (error?.code === "PGRST204") {
+      console.warn(
+        "⚠️ [useAuth] Colonnes nom/telephone absentes, nouvelle tentative avec le schéma historique",
+      );
+      const fallback = await supabase
+        .from("profiles")
+        .select("id, phone, status, auth_code, citizen_code, is_admin, created_at, updated_at")
+        .eq("phone", phone)
+        .maybeSingle();
+      data = fallback.data;
+      error = fallback.error;
+    }
 
     console.log("📦 [useAuth] Réponse Supabase:", { data, error });
 
