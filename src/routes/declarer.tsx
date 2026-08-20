@@ -237,7 +237,7 @@ function DeclarerPage() {
             </div>
           </div>
 
-          <Button type="submit" className="w-full" disabled={loading || !user}>
+          <Button type="submit" className="w-full" disabled={loading || !user || !isFormValid}>
             {loading ? "Déclaration en cours..." : editingId ? "Mettre à jour" : "Déclarer"}
           </Button>
         </form>
