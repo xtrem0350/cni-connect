@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useAuth } from "@/hooks/useAuth";
 import { createDeclaration, updateDeclaration } from "@/services/declarationService";
+import { hashNumero } from "@/lib/documents";
 import { supabase } from "@/integrations/supabase";
 
 export const Route = createFileRoute("/declarer")({
