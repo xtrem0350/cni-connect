@@ -35,7 +35,6 @@ const AuthContext = createContext<AuthState>({
   refreshProfile: async () => {},
 });
 
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<CitizenUser | null>(null);
   const [userProfile, setUserProfile] = useState<Profile | null>(null);
@@ -45,14 +44,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [needsAuth, setNeedsAuth] = useState(false);
 
   const refreshProfile = async () => {
+    console.log("🚀 [useAuth] DEBUT refreshProfile");
+    console.log("🔍 [useAuth] Vérification sessionStorage...");
     const phone = window.sessionStorage.getItem("user_phone");
+    console.log("📞 [useAuth] phone depuis sessionStorage:", phone);
     if (!phone) {
+      console.log("❌ [useAuth] PAS DE PHONE -> loading=false, userProfile=null");
+      setUser(null);
+      setUserProfile(null);
+      setUserStatus(null);
+      setIsAdmin(false);
       setNeedsAuth(true);
       setLoading(false);
       return;
     }
 
     setNeedsAuth(false);
+    console.log("📡 [useAuth] Requête Supabase pour phone:", phone);
 
     const { data, error } = await supabase
       .from("profiles")
@@ -60,23 +68,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .eq("phone", phone)
       .maybeSingle();
 
+    console.log("📦 [useAuth] Réponse Supabase:", { data, error });
+
+    if (error) {
+      console.error("❌ [useAuth] Erreur Supabase:", error);
+    }
+
     if (error || !data) {
+      if (!error) console.log("⚠️ [useAuth] Aucun profil trouvé");
       setUser(null);
       setUserProfile(null);
       setUserStatus(null);
       setIsAdmin(false);
+      setNeedsAuth(true);
       setLoading(false);
+      console.log("🏁 [useAuth] Fin chargement, loading = false");
       return;
     }
 
     const profile = data as Profile;
+    console.log("✅ [useAuth] Profil chargé:", profile);
     setUserProfile(profile);
     setUser({ id: profile.id, phone: profile.phone ?? phone });
     setUserStatus((profile.status as DeclarationType | null) ?? null);
     setIsAdmin(Boolean(profile.is_admin));
     setNeedsAuth(false);
     window.sessionStorage.setItem("citizen_profile", JSON.stringify(profile));
+    console.log("💾 [useAuth] citizen_profile sauvegardé");
     setLoading(false);
+    console.log("🏁 [useAuth] Fin chargement, loading = false");
   };
 
   useEffect(() => {

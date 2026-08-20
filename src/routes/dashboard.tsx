@@ -28,16 +28,27 @@ type DeclarationSummary = {
 };
 
 function DashboardPage() {
+  console.log("🚀 [dashboard] DEBUT DU RENDU");
   const { userId, userProfile, userStatus, loading, needsAuth } = useAuth();
   const router = useRouter();
+  console.log("📊 [dashboard] useAuth retourne:", {
+    userProfile,
+    userId,
+    userStatus,
+    loading,
+  });
   const [declarations, setDeclarations] = useState<DeclarationSummary[]>([]);
   const [matchCount, setMatchCount] = useState(0);
 
   useEffect(() => {
+    console.log("🔄 [dashboard] useEffect déclenché");
+    console.log("📊 [dashboard] loading:", loading);
+    console.log("📊 [dashboard] userProfile:", userProfile);
     if (!loading && needsAuth) {
+      console.log("⚠️ [dashboard] PAS DE PROFIL -> redirection vers auth");
       void router.navigate({ to: "/auth" });
     }
-  }, [loading, needsAuth, router]);
+  }, [loading, needsAuth, router, userProfile]);
 
   useEffect(() => {
     if (!userId) {
@@ -55,7 +66,10 @@ function DashboardPage() {
         .limit(3);
       setDeclarations((declarationData as DeclarationSummary[] | null) ?? []);
 
-      const { data: allUserDeclarations } = await supabase.from("declarations").select("id").eq("user_id", userId);
+      const { data: allUserDeclarations } = await supabase
+        .from("declarations")
+        .select("id")
+        .eq("user_id", userId);
       const declarationIds = (allUserDeclarations ?? []).map(({ id }) => id);
       if (declarationIds.length === 0) {
         setMatchCount(0);
@@ -65,7 +79,9 @@ function DashboardPage() {
       const { data: matchData } = await supabase
         .from("matchs")
         .select("id, declaration_perdu_id, declaration_trouve_id")
-        .or(`declaration_perdu_id.in.(${declarationIds.join(",")}),declaration_trouve_id.in.(${declarationIds.join(",")})`);
+        .or(
+          `declaration_perdu_id.in.(${declarationIds.join(",")}),declaration_trouve_id.in.(${declarationIds.join(",")})`,
+        );
       const userMatchCount = matchData?.length ?? 0;
 
       setMatchCount(userMatchCount);
@@ -82,6 +98,7 @@ function DashboardPage() {
   );
 
   if (loading) {
+    console.log('⏳ [dashboard] loading = true -> affichage "Chargement..."');
     return (
       <AppShell>
         <p className="py-12 text-center text-sm text-muted-foreground">Chargement...</p>
@@ -92,6 +109,8 @@ function DashboardPage() {
   if (needsAuth) {
     return null;
   }
+
+  console.log("✅ [dashboard] loading = false, affichage du dashboard");
 
   if (!userProfile) {
     return (
@@ -156,16 +175,18 @@ function DashboardPage() {
         <div className="flex flex-wrap gap-3">
           <Button
             asChild
-            className={isPerdu ? "bg-red-600 text-white hover:bg-red-700" : "bg-green-600 text-white hover:bg-green-700"}
+            className={
+              isPerdu
+                ? "bg-red-600 text-white hover:bg-red-700"
+                : "bg-green-600 text-white hover:bg-green-700"
+            }
           >
             <Link to="/declarer" search={{ type: declarationType }}>
               {declarationLabel}
             </Link>
           </Button>
           <Button asChild variant="outline">
-            <Link to="/mes-declarations">
-              📋 Voir mes déclarations
-            </Link>
+            <Link to="/mes-declarations">📋 Voir mes déclarations</Link>
           </Button>
         </div>
 
@@ -196,7 +217,10 @@ function DashboardPage() {
             <CardContent>
               <p className="text-3xl font-bold text-primary">{matchCount}</p>
               <p className="mt-2 text-sm text-muted-foreground">correspondances détectées</p>
-              <Link to="/chat" className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-primary">
+              <Link
+                to="/chat"
+                className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-primary"
+              >
                 Ouvrir le chat
                 <ArrowRight className="h-4 w-4" aria-hidden />
               </Link>
@@ -214,11 +238,15 @@ function DashboardPage() {
                 <p className="text-sm text-muted-foreground">Aucune déclaration pour le moment.</p>
               ) : (
                 declarations.map((item) => (
-                  <div key={item.id} className="flex items-center justify-between gap-3 rounded-lg border border-border bg-muted/30 p-3">
+                  <div
+                    key={item.id}
+                    className="flex items-center justify-between gap-3 rounded-lg border border-border bg-muted/30 p-3"
+                  >
                     <div>
                       <p className="font-medium">{item.type_document ?? "Document"}</p>
                       <p className="text-xs text-muted-foreground">
-                        {item.type === "perdu" ? "Perdu" : "Trouvé"} · {item.lieu_perte_trouvaille ?? "Lieu non renseigné"}
+                        {item.type === "perdu" ? "Perdu" : "Trouvé"} ·{" "}
+                        {item.lieu_perte_trouvaille ?? "Lieu non renseigné"}
                       </p>
                     </div>
                     <span className="rounded-full bg-primary/10 px-2 py-1 text-[10px] font-medium uppercase tracking-wide text-primary">
@@ -239,9 +267,13 @@ function DashboardPage() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">
-                Les numéros de document sont protégés et les codes de validation restent requis avant tout échange.
+                Les numéros de document sont protégés et les codes de validation restent requis
+                avant tout échange.
               </p>
-              <Link to="/securite" className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-primary">
+              <Link
+                to="/securite"
+                className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-primary"
+              >
                 Lire la politique
                 <ArrowRight className="h-4 w-4" aria-hidden />
               </Link>

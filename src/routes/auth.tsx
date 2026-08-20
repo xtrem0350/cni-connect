@@ -1,5 +1,5 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { HeroBanner } from "@/components/HeroBanner";
@@ -32,10 +32,11 @@ function AuthPage() {
   const [enteredCode, setEnteredCode] = useState("");
   const [loading, setLoading] = useState(false);
 
-  if (user) {
-    router.navigate({ to: "/dashboard" });
-    return null;
-  }
+  useEffect(() => {
+    if (user) void router.navigate({ to: "/dashboard" });
+  }, [router, user]);
+
+  if (user) return null;
 
   const generateCode = () => {
     const now = new Date();
@@ -46,12 +47,15 @@ function AuthPage() {
   };
 
   const checkPhone = async () => {
+    console.log("🚀 [auth] checkPhone DEBUT");
+    console.log("📞 [auth] phone saisi brut:", phone);
     if (!phone.trim()) {
       toast.error("Veuillez entrer votre numéro WhatsApp");
       return;
     }
 
     const formattedPhone = formatPhoneForSupabase(phone);
+    console.log("📞 [auth] phone formaté:", formattedPhone);
     if (!isValidPhone(formattedPhone)) {
       toast.error("Numéro invalide. Format : +225XXXXXXXX");
       return;
@@ -59,28 +63,57 @@ function AuthPage() {
 
     setLoading(true);
     try {
+      console.log("📡 [auth] Vérification existence dans profiles...");
       const { data, error } = await supabase
         .from("profiles")
         .select("auth_code, status, id, phone")
         .eq("phone", formattedPhone)
         .maybeSingle();
 
-      if (error && error.code !== "PGRST116") throw error;
+      console.log("📦 [auth] Résultat vérification:", { data, error });
+
+      if (error) {
+        console.error("❌ [auth] ERREUR SUPABASE:", error);
+        toast.error("Erreur de vérification");
+        return;
+      }
 
       if (data) {
+        console.log("✅ [auth] Citoyen EXISTANT, status:", data.status);
+        console.log("🔑 [auth] auth_code existant:", data.auth_code);
         setIsNewUser(false);
-        setCodeFromDB(data.auth_code ?? "");
+        if (data.status !== status) {
+          console.log("🔄 [auth] Changement de statut:", data.status, "→", status);
+          const newCode = generateCode();
+          console.log("🔑 [auth] Nouveau code généré:", newCode);
+          const { error: updateError } = await supabase
+            .from("profiles")
+            .update({ status, auth_code: newCode, citizen_code: newCode })
+            .eq("phone", formattedPhone);
+          if (updateError) throw updateError;
+          setCodeFromDB(newCode);
+          setEnteredCode(newCode);
+          console.log("📝 [auth] Nouveau code pré-rempli:", newCode);
+        } else {
+          console.log("✅ [auth] Même statut, code existant:", data.auth_code);
+          setCodeFromDB(data.auth_code ?? "");
+          setEnteredCode(data.auth_code ?? "");
+          console.log("📝 [auth] Code pré-rempli:", data.auth_code);
+        }
         toast.info("Bienvenue ! Entrez votre code");
       } else {
+        console.log("🆕 [auth] Nouveau citoyen");
         const newCode = generateCode();
+        console.log("🔑 [auth] Code généré:", newCode);
         setIsNewUser(true);
         setGeneratedCode(newCode);
         setEnteredCode(newCode);
         toast.info("Nouveau citoyen ! Votre code a été généré");
       }
       setStep("code");
+      console.log("🔄 [auth] Passage à l'étape code");
     } catch (error) {
-      console.error("Erreur Supabase:", error);
+      console.error("❌ [auth] ERREUR:", error);
       toast.error("Erreur de vérification");
     } finally {
       setLoading(false);
@@ -88,6 +121,11 @@ function AuthPage() {
   };
 
   const handleConnect = async () => {
+    console.log("🚀 [auth] handleConnect DEBUT");
+    console.log("📞 [auth] phone:", phone);
+    console.log("🔑 [auth] enteredCode:", enteredCode);
+    console.log("👤 [auth] isNewUser:", isNewUser);
+    console.log("📋 [auth] status:", status);
     if (isNewUser && enteredCode !== generatedCode) {
       toast.error("Code incorrect");
       return;
@@ -99,6 +137,7 @@ function AuthPage() {
     }
 
     const formattedPhone = formatPhoneForSupabase(phone);
+    console.log("📞 [auth] phone formaté:", formattedPhone);
     if (!isValidPhone(formattedPhone)) {
       toast.error("Numéro invalide. Format : +225XXXXXXXX");
       return;
@@ -107,17 +146,16 @@ function AuthPage() {
     setLoading(true);
     try {
       if (isNewUser) {
-        const { error: insertError } = await supabase
-          .from("profiles")
-          .insert({
-            phone: formattedPhone,
-            status,
-            citizen_code: generatedCode,
-            auth_code: enteredCode,
-          });
+        console.log("📝 [auth] Création nouveau profil...");
+        const { error: insertError } = await supabase.from("profiles").insert({
+          phone: formattedPhone,
+          status,
+          citizen_code: generatedCode,
+          auth_code: enteredCode,
+        });
 
         if (insertError) {
-          console.error("Erreur de création du profil:", insertError);
+          console.error("❌ [auth] ERREUR INSERT:", insertError);
           if (insertError?.code === "23505") {
             toast.error("Ce numéro est déjà enregistré");
           } else {
@@ -125,22 +163,26 @@ function AuthPage() {
           }
           return;
         }
+        console.log("✅ [auth] Profil créé avec succès");
         toast.success("Compte créé avec succès");
       } else {
+        console.log("✅ [auth] Citoyen existant, connexion directe");
         toast.success("Connexion réussie");
       }
 
+      console.log("💾 [auth] Sauvegarde sessionStorage...");
       sessionStorage.setItem("user_phone", formattedPhone);
       sessionStorage.setItem("user_status", status);
+      console.log("✅ [auth] Session sauvegardée");
+      console.log("🔄 [auth] Redirection vers /dashboard");
       router.navigate({ to: "/dashboard" });
     } catch (error) {
-      console.error("Erreur de connexion:", error);
+      console.error("❌ [auth] Erreur:", error);
       toast.error("Erreur de connexion");
     } finally {
       setLoading(false);
     }
   };
-
 
   const codeInput = (
     <Input
