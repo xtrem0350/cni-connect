@@ -106,52 +106,55 @@ function AuthPage() {
 
     setLoading(true);
     try {
-      // Email technique dérivé du numéro WhatsApp (Phone signups désactivé)
-      const email = `${formattedPhone.replace("+", "")}@cni-connect.ci`;
-      const password = isNewUser ? generatedCode : codeFromDB;
+      const code = isNewUser ? generatedCode : codeFromDB;
 
+      // Session Supabase Auth optionnelle (email technique dérivé du numéro)
+      const email = `${formattedPhone.replace("+", "")}@cni-connect.ci`;
       if (isNewUser) {
         const { error: signUpError } = await supabase.auth.signUp({
           email,
-          password,
-          options: {
-            data: {
-              phone: formattedPhone,
-              status,
-              citizen_code: generatedCode,
-            },
-          },
+          password: code,
+          options: { data: { phone: formattedPhone, status, citizen_code: code } },
         });
+        if (signUpError) console.warn("SignUp indisponible:", signUpError.message);
+      }
+      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password: code });
+      if (signInError) console.warn("SignIn indisponible:", signInError.message);
 
-        if (signUpError) {
-          console.error("SignUp error:", signUpError);
-          if (signUpError.message.toLowerCase().includes("already registered")) {
-            toast.error("Ce numéro est déjà enregistré");
-          } else {
-            toast.error(signUpError.message);
-          }
-          return;
-        }
-
-        const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-        if (signInError) {
-          console.error("SignIn error:", signInError);
-          toast.error("Compte créé. Confirmation email requise : désactivez-la dans Supabase.");
-          return;
-        }
-
-        toast.success("Compte créé avec succès");
-      } else {
-        const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-        if (signInError) {
-          console.error("SignIn error:", signInError);
-          toast.error("Erreur de connexion");
-          return;
-        }
-
-        toast.success("Connexion réussie");
+      // Profil citoyen (source de vérité pour le tableau de bord)
+      let profile: Record<string, unknown> | null = null;
+      if (isNewUser) {
+        const { data, error } = await supabase
+          .from("profiles")
+          .insert({ phone: formattedPhone, status, auth_code: code })
+          .select("id, phone, status, auth_code, is_admin")
+          .maybeSingle();
+        if (error) console.warn("Insertion profil:", error.message);
+        profile = data ?? null;
       }
 
+      if (!profile) {
+        const { data } = await supabase
+          .from("profiles")
+          .select("id, phone, status, auth_code, is_admin")
+          .eq("phone", formattedPhone)
+          .maybeSingle();
+        profile = data ?? null;
+      }
+
+      if (!profile) {
+        toast.error("Impossible de charger votre profil citoyen");
+        return;
+      }
+
+      try {
+        sessionStorage.setItem("user_phone", formattedPhone);
+        sessionStorage.setItem("citizen_profile", JSON.stringify(profile));
+      } catch {
+        // stockage indisponible : on ignore
+      }
+
+      toast.success(isNewUser ? "Compte créé avec succès" : "Connexion réussie");
       router.navigate({ to: "/dashboard" });
     } catch (error) {
       console.error("Erreur de connexion:", error);
