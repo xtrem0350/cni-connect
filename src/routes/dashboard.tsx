@@ -28,9 +28,17 @@ type DeclarationSummary = {
 };
 
 function DashboardPage() {
-  const { user, userProfile } = useAuth();
+  const { user, userProfile, userStatus, loading } = useAuth();
+  const navigate = useNavigate();
   const [declarations, setDeclarations] = useState<DeclarationSummary[]>([]);
   const [matchCount, setMatchCount] = useState(0);
+
+  useEffect(() => {
+    if (loading) return;
+    if (!user && !userProfile) {
+      void navigate({ to: "/auth" });
+    }
+  }, [loading, user, userProfile, navigate]);
 
   useEffect(() => {
     if (!user) return;
@@ -67,11 +75,20 @@ function DashboardPage() {
   const userPhone = userProfile?.phone ?? userProfile?.telephone ?? user?.phone ?? "Numéro non renseigné";
   const userCode = userProfile?.auth_code ?? "Code non renseigné";
   const greeting = new Date().getHours() < 18 ? "Bonjour" : "Bonsoir";
+  const status = userStatus ?? (userProfile?.status as "perdu" | "trouve" | null) ?? "perdu";
 
   const activeDeclarations = useMemo(
     () => declarations.filter((item) => item.statut === "actif" || !item.statut).length,
     [declarations],
   );
+
+  if (loading) {
+    return (
+      <AppShell>
+        <LoadingSpinner />
+      </AppShell>
+    );
+  }
 
   return (
     <AppShell>
@@ -85,7 +102,11 @@ function DashboardPage() {
           <p className="mt-2 text-sm font-medium text-muted-foreground">
             Code : <span className="font-mono text-base text-foreground">{userCode}</span>
           </p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Statut : <span className="font-semibold text-foreground">{status === "perdu" ? "Document perdu" : "Document trouvé"}</span>
+          </p>
         </div>
+
 
         <div className="grid gap-4 md:grid-cols-3">
           <Card>
