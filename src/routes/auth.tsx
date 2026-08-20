@@ -22,7 +22,7 @@ const getInitialStatus = (): "perdu" | "trouve" => {
 };
 
 function AuthPage() {
-  const { user } = useAuth();
+  const { user, refreshProfile } = useAuth();
   const router = useRouter();
   const [step, setStep] = useState<"phone" | "code">("phone");
   const [phone, setPhone] = useState("+225");
@@ -192,8 +192,10 @@ function AuthPage() {
       sessionStorage.setItem("user_phone", formattedPhone);
       sessionStorage.setItem("user_status", status);
       console.log("✅ [auth] Session sauvegardée");
+      console.log("🔄 [auth] Actualisation du profil avant navigation");
+      await refreshProfile();
       console.log("🔄 [auth] Redirection vers /dashboard");
-      router.navigate({ to: "/dashboard" });
+      await router.navigate({ to: "/dashboard" });
     } catch (error) {
       console.error("❌ [auth] Erreur:", error);
       toast.error("Erreur de connexion");

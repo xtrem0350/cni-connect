@@ -16,10 +16,10 @@ export const Route = createFileRoute("/declarer")({
   validateSearch: (
     search: Record<string, unknown>,
   ): { type?: "perdu" | "trouve"; id?: string } => ({
-    ...(search['type'] === "trouve" || search['type'] === "perdu"
-      ? { type: search['type'] as "perdu" | "trouve" }
+    ...(search["type"] === "trouve" || search["type"] === "perdu"
+      ? { type: search["type"] as "perdu" | "trouve" }
       : {}),
-    ...(typeof search['id'] === "string" ? { id: search['id'] } : {}),
+    ...(typeof search["id"] === "string" ? { id: search["id"] } : {}),
   }),
   head: () => ({
     meta: [
@@ -97,11 +97,12 @@ function DeclarerPage() {
   };
 
   const isFormValid =
+    form.nom.trim() !== "" &&
+    form.prenom.trim() !== "" &&
     form.dateNaissance.trim() !== "" &&
     form.lieuNaissance.trim() !== "" &&
     form.dateDelivrance.trim() !== "" &&
-    documentType.trim() !== "" &&
-    form.numeroPiece.trim() !== "";
+    documentType.trim() !== "";
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -111,7 +112,8 @@ function DeclarerPage() {
       !form.lieuNaissance ||
       !form.dateDelivrance ||
       !form.typeDocument ||
-      !form.numeroPiece.trim()
+      !form.nom.trim() ||
+      !form.prenom.trim()
     ) {
       toast.error("Veuillez compléter tous les champs obligatoires");
       return;
@@ -120,13 +122,13 @@ function DeclarerPage() {
     setLoading(true);
 
     try {
-      const numeroHash = await hashNumero(form.numeroPiece);
+      const numeroHash = form.numeroPiece.trim() ? await hashNumero(form.numeroPiece) : null;
       const payload = {
         user_id: userId,
         type,
         type_document: documentType,
         numero_hash: numeroHash,
-        nom_porteur: form.nom || form.prenom || null,
+        nom_porteur: `${form.nom.trim()} ${form.prenom.trim()}`.trim(),
         date_naissance: form.dateNaissance,
         lieu_naissance: form.lieuNaissance,
         date_delivrance: form.dateDelivrance,
@@ -138,7 +140,15 @@ function DeclarerPage() {
         const { error } = await updateDeclaration(editingId, payload);
         if (error) throw error;
       } else {
-        const { error } = await createDeclaration(payload);
+        let { error } = await createDeclaration(payload);
+        if (error?.code === "PGRST204" && error.message.includes("lieu_perte_trouvaille")) {
+          console.warn(
+            "⚠️ [declarer] Colonne lieu_perte_trouvaille absente, nouvelle tentative sans cette colonne",
+          );
+          const fallbackPayload: Record<string, unknown> = { ...payload };
+          delete fallbackPayload.lieu_perte_trouvaille;
+          ({ error } = await createDeclaration(fallbackPayload));
+        }
         if (error) throw error;
       }
 
@@ -179,7 +189,10 @@ function DeclarerPage() {
           </div>
 
           <div className="rounded-lg border border-border bg-muted/30 p-3 text-sm text-muted-foreground">
-            Type de déclaration : <span className="font-semibold text-foreground">{type === "perdu" ? "Document perdu" : "Document trouvé"}</span>
+            Type de déclaration :{" "}
+            <span className="font-semibold text-foreground">
+              {type === "perdu" ? "Document perdu" : "Document trouvé"}
+            </span>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
@@ -222,35 +235,56 @@ function DeclarerPage() {
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="document-type">Type de document *</Label>
-              <Input id="document-type" value={form.typeDocument} onChange={(event) => handleChange("typeDocument", event.target.value)} required />
+              <Input
+                id="document-type"
+                value={form.typeDocument}
+                onChange={(event) => handleChange("typeDocument", event.target.value)}
+                required
+              />
             </div>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label htmlFor="document-number">Numéro de pièce</Label>
+              <Label htmlFor="document-number">Numéro de pièce (optionnel)</Label>
               <Input
                 id="document-number"
                 placeholder="Numéro du document"
                 value={form.numeroPiece}
                 onChange={(event) => handleChange("numeroPiece", event.target.value)}
-                required
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="name">Nom</Label>
-              <Input id="name" placeholder="Nom du titulaire" value={form.nom} onChange={(event) => handleChange("nom", event.target.value)} />
+              <Label htmlFor="name">Nom *</Label>
+              <Input
+                id="name"
+                placeholder="Nom du titulaire"
+                value={form.nom}
+                onChange={(event) => handleChange("nom", event.target.value)}
+                required
+              />
             </div>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label htmlFor="firstname">Prénom</Label>
-              <Input id="firstname" placeholder="Prénom" value={form.prenom} onChange={(event) => handleChange("prenom", event.target.value)} />
+              <Label htmlFor="firstname">Prénom *</Label>
+              <Input
+                id="firstname"
+                placeholder="Prénom"
+                value={form.prenom}
+                onChange={(event) => handleChange("prenom", event.target.value)}
+                required
+              />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="lost-area">Commune de perte</Label>
-              <Input id="lost-area" placeholder="Yopougon" value={form.communePerte} onChange={(event) => handleChange("communePerte", event.target.value)} />
+              <Input
+                id="lost-area"
+                placeholder="Yopougon"
+                value={form.communePerte}
+                onChange={(event) => handleChange("communePerte", event.target.value)}
+              />
             </div>
           </div>
 
