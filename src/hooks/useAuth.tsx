@@ -34,6 +34,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Profil citoyen éventuellement mis en cache par la page d'identification
+    try {
+      const cached = sessionStorage.getItem("citizen_profile");
+      if (cached) {
+        const profile = JSON.parse(cached) as Profile;
+        setUserProfile(profile);
+        setUserStatus((profile.status as DeclarationType | null) ?? null);
+        setIsAdmin(Boolean(profile.is_admin));
+      }
+    } catch {
+      // cache illisible : on ignore
+    }
+
     const applyUserProfile = async (userId: string | undefined) => {
       if (!userId) {
         setUserProfile(null);
@@ -49,9 +62,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .maybeSingle();
 
       if (error || !data) {
-        setUserProfile(null);
-        setUserStatus(null);
-        setIsAdmin(false);
         return;
       }
 
@@ -59,30 +69,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUserProfile(profile);
       setUserStatus((profile.status as DeclarationType | null) ?? null);
       setIsAdmin(Boolean(profile.is_admin));
+      try {
+        sessionStorage.setItem("citizen_profile", JSON.stringify(profile));
+      } catch {
+        // stockage indisponible : on ignore
+      }
     };
 
     const handleSession = async (nextSession: Session | null) => {
       setSession(nextSession);
-      if (nextSession?.user) {
-        await applyUserProfile(nextSession.user.id);
-      } else {
-        setUserProfile(null);
-        setUserStatus(null);
-        setIsAdmin(false);
+      try {
+        if (nextSession?.user) {
+          await applyUserProfile(nextSession.user.id);
+        }
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     const { data: sub } = supabase.auth.onAuthStateChange((_event, nextSession) => {
       void handleSession(nextSession);
     });
 
-    void supabase.auth.getSession().then(({ data }) => {
-      void handleSession(data.session);
-    });
+    void supabase.auth
+      .getSession()
+      .then(({ data }) => handleSession(data.session))
+      .catch(() => setLoading(false));
 
     return () => sub.subscription.unsubscribe();
   }, []);
+
+  const handleSignOut = async () => {
+    setUserProfile(null);
+    setUserStatus(null);
+    setIsAdmin(false);
+    try {
+      sessionStorage.removeItem("citizen_profile");
+    } catch {
+      // stockage indisponible : on ignore
+    }
+    await supabase.auth.signOut();
+  };
 
   return (
     <AuthContext.Provider
@@ -93,12 +120,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAdmin,
         session,
         loading,
-        signOut: async () => {
-          setUserProfile(null);
-          setUserStatus(null);
-          setIsAdmin(false);
-          await supabase.auth.signOut();
-        },
+        signOut: handleSignOut,
+        logout: handleSignOut,
       }}
     >
       {children}
@@ -109,3 +132,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export function useAuth() {
   return useContext(AuthContext);
 }
+
