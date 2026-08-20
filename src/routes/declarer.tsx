@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useAuth } from "@/hooks/useAuth";
 import { createDeclaration, updateDeclaration } from "@/services/declarationService";
+import { hashNumero } from "@/lib/documents";
 import { supabase } from "@/integrations/supabase";
 
 export const Route = createFileRoute("/declarer")({
@@ -94,21 +95,25 @@ function DeclarerPage() {
     setForm((current) => ({ ...current, [field]: value }));
   };
 
+  const isFormValid = Boolean(
+    form.dateNaissance && form.lieuNaissance && form.dateDelivrance && form.typeDocument && form.numeroPiece.trim(),
+  );
+
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!user) return;
-    if (!form.dateNaissance || !form.lieuNaissance || !form.dateDelivrance || !form.typeDocument) {
-      return;
-    }
+    if (!user || !isFormValid) return;
 
     setLoading(true);
 
     try {
+      // Le numéro est haché côté client : il ne quitte jamais l'appareil en clair
+      const numeroHash = await hashNumero(form.numeroPiece);
+
       const payload = {
         user_id: user.id,
         type,
         type_document: form.typeDocument,
-        numero_hash: form.numeroPiece || "",
+        numero_hash: numeroHash,
         nom_porteur: form.nom || form.prenom || null,
         date_naissance: form.dateNaissance,
         lieu_naissance: form.lieuNaissance,
@@ -128,6 +133,7 @@ function DeclarerPage() {
       setLoading(false);
     }
   }
+
 
   return (
     <AppShell>
@@ -231,7 +237,7 @@ function DeclarerPage() {
             </div>
           </div>
 
-          <Button type="submit" className="w-full" disabled={loading || !user}>
+          <Button type="submit" className="w-full" disabled={loading || !user || !isFormValid}>
             {loading ? "Déclaration en cours..." : editingId ? "Mettre à jour" : "Déclarer"}
           </Button>
         </form>
