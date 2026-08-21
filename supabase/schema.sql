@@ -63,6 +63,7 @@ create table if not exists public.declarations (
   date_delivrance date not null,
   periode_debut text,
   periode_fin text,
+  photo_url text,
   lieu_perte_trouvaille text,
   description text,
   commentaire text,
@@ -79,7 +80,8 @@ alter table public.declarations
   add column if not exists description text,
   add column if not exists type_document text default 'CNI',
   add column if not exists periode_debut text,
-  add column if not exists periode_fin text;
+  add column if not exists periode_fin text,
+  add column if not exists photo_url text;
 
 alter table public.declarations
   alter column numero_hash drop not null;

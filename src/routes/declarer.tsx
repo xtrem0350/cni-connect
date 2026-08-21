@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ChangeEvent } from "react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { HeroBanner } from "@/components/HeroBanner";
@@ -41,6 +41,9 @@ function DeclarerPage() {
   const [documentType, setDocumentType] = useState("CNI");
   const [loading, setLoading] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [photo, setPhoto] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState("");
+  const [photoPath, setPhotoPath] = useState<string | null>(null);
   const [form, setForm] = useState({
     dateNaissance: "",
     lieuNaissance: "",
@@ -112,6 +115,51 @@ function DeclarerPage() {
     return [day, month, year].filter(Boolean).join("/");
   };
 
+  const handlePhotoChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Veuillez sélectionner une image");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("L'image ne doit pas dépasser 5 Mo");
+      return;
+    }
+
+    setPhoto(file);
+    setPhotoPreview(URL.createObjectURL(file));
+  };
+
+  const clearPhoto = () => {
+    if (photoPreview) URL.revokeObjectURL(photoPreview);
+    setPhoto(null);
+    setPhotoPreview("");
+    setPhotoPath(null);
+  };
+
+  const uploadPhoto = async (file: File, currentUserId: string) => {
+    const extension = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
+    const filePath = `declarations/${currentUserId}/${crypto.randomUUID()}.${extension}`;
+    const { error } = await supabase.storage.from("documents").upload(filePath, file, {
+      cacheControl: "3600",
+      contentType: file.type,
+      upsert: false,
+    });
+    if (error) throw error;
+    return filePath;
+  };
+
+  useEffect(() => {
+    return () => {
+      if (photoPreview) URL.revokeObjectURL(photoPreview);
+    };
+  }, [photoPreview]);
+
+  useEffect(() => {
+    if (type === "perdu") clearPhoto();
+  }, [type]);
+
   useEffect(() => {
     if (!userId) return;
 
@@ -160,6 +208,14 @@ function DeclarerPage() {
           "",
         communePerte: data.lieu_perte_trouvaille ?? "",
       });
+      const existingPhotoPath = typeof data.photo_url === "string" ? data.photo_url : "";
+      setPhotoPath(existingPhotoPath || null);
+      if (existingPhotoPath) {
+        const { data: signedPhoto } = await supabase.storage
+          .from("documents")
+          .createSignedUrl(existingPhotoPath, 300);
+        if (signedPhoto?.signedUrl) setPhotoPreview(signedPhoto.signedUrl);
+      }
     })();
   }, [userId, userProfile]);
 
@@ -175,7 +231,8 @@ function DeclarerPage() {
     form.periodeDebut.trim() !== "" &&
     form.periodeFin.trim() !== "" &&
     Number(form.periodeFin) >= Number(form.periodeDebut) &&
-    documentType.trim() !== "";
+    documentType.trim() !== "" &&
+    (type !== "trouve" || Boolean(photo || photoPath));
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -188,6 +245,7 @@ function DeclarerPage() {
       !form.typeDocument ||
       !form.nom.trim() ||
       !form.prenom.trim()
+      || (type === "trouve" && !photo && !photoPath)
     ) {
       toast.error("Veuillez compléter tous les champs obligatoires");
       return;
@@ -220,6 +278,7 @@ function DeclarerPage() {
       }
 
       const numeroHash = form.numeroPiece.trim() ? await hashNumero(form.numeroPiece) : null;
+      const uploadedPhotoPath = type === "trouve" && photo ? await uploadPhoto(photo, userId) : photoPath;
       const payload: Record<string, unknown> = {
         user_id: userId,
         type,
@@ -233,6 +292,7 @@ function DeclarerPage() {
         periode_debut: String(periodeDebut),
         periode_fin: String(periodeFin),
         lieu_perte_trouvaille: form.communePerte || null,
+        photo_url: type === "trouve" ? uploadedPhotoPath : null,
         statut: "actif",
       };
 
@@ -403,6 +463,43 @@ function DeclarerPage() {
                 </p>
               )}
           </div>
+
+          {type === "trouve" ? (
+            <div className="space-y-2">
+              <Label htmlFor="document-photo">Photo du document trouvé *</Label>
+              <div className="rounded-lg border-2 border-dashed border-border p-4 text-center">
+                {photoPreview ? (
+                  <div className="space-y-3">
+                    <img
+                      src={photoPreview}
+                      alt="Aperçu du document trouvé"
+                      className="mx-auto max-h-64 rounded-lg object-contain"
+                      draggable={false}
+                    />
+                    {photo ? (
+                      <Button type="button" variant="destructive" size="sm" onClick={clearPhoto}>
+                        Retirer la photo
+                      </Button>
+                    ) : null}
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-sm text-muted-foreground">
+                      Ajoutez une photo du document trouvé
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">JPG ou PNG, 5 Mo maximum</p>
+                    <Input
+                      id="document-photo"
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={handlePhotoChange}
+                      className="mx-auto mt-3 max-w-sm cursor-pointer"
+                    />
+                  </>
+                )}
+              </div>
+            </div>
+          ) : null}
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">

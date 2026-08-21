@@ -65,8 +65,8 @@ export function AdminPanel({ onClose }: AdminPanelProps) {
       setEmail("");
       setPassword("");
       setActiveTab("login");
-    } catch (error: any) {
-      toast.error(`❌ Erreur: ${error.message}`);
+    } catch (error: unknown) {
+      toast.error(`❌ Erreur: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
       setLoading(false);
     }
@@ -91,8 +91,8 @@ export function AdminPanel({ onClose }: AdminPanelProps) {
       setTimeout(() => {
         window.location.href = "/dashboard";
       }, 500);
-    } catch (error: any) {
-      toast.error(`❌ Erreur: ${error.message}`);
+    } catch (error: unknown) {
+      toast.error(`❌ Erreur: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
       setLoading(false);
     }
@@ -130,7 +130,11 @@ export function AdminPanel({ onClose }: AdminPanelProps) {
                 disabled={loading}
               />
             </div>
-            <Button type="submit" disabled={loading || !email || !password} className="w-full bg-primary text-primary-foreground">
+            <Button
+              type="submit"
+              disabled={loading || !email || !password}
+              className="w-full bg-primary text-primary-foreground"
+            >
               {loading ? "⏳ Connexion..." : "🔐 Se connecter"}
             </Button>
           </form>
@@ -160,7 +164,11 @@ export function AdminPanel({ onClose }: AdminPanelProps) {
                 disabled={loading}
               />
             </div>
-            <Button type="submit" disabled={loading || !email || !password} className="w-full bg-primary text-primary-foreground">
+            <Button
+              type="submit"
+              disabled={loading || !email || !password}
+              className="w-full bg-primary text-primary-foreground"
+            >
               {loading ? "⏳ Création..." : "📝 Créer un compte admin"}
             </Button>
           </form>
