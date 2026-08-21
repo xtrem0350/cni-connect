@@ -53,15 +53,37 @@ function DeclarerPage() {
 
   const formatDateForSupabase = (value: string) => {
     if (!value) return null;
-    const isoMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    const cleaned = value.trim();
+
+    const isoMatch = cleaned.match(/^(\d{4})-(\d{2})-(\d{2})$/);
     if (isoMatch) {
       const [, year, month, day] = isoMatch;
-      return `${year}-${month}-${day}`;
+      const date = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
+      if (
+        date.getUTCFullYear() === Number(year) &&
+        date.getUTCMonth() === Number(month) - 1 &&
+        date.getUTCDate() === Number(day)
+      ) {
+        return `${year}-${month}-${day}`;
+      }
+      return null;
     }
-    const frMatch = value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-    if (!frMatch) return null;
-    const [, day, month, year] = frMatch;
-    return `${year}-${month}-${day}`;
+
+    const frMatch = cleaned.match(/^(\d{2})[\/\-](\d{2})[\/\-](\d{4})$/);
+    if (frMatch) {
+      const [, day, month, year] = frMatch;
+      const date = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
+      if (
+        date.getUTCFullYear() === Number(year) &&
+        date.getUTCMonth() === Number(month) - 1 &&
+        date.getUTCDate() === Number(day)
+      ) {
+        return `${year}-${month}-${day}`;
+      }
+      return null;
+    }
+
+    return null;
   };
 
   const formatDateForInput = (value: string | null | undefined) => {
@@ -69,6 +91,11 @@ function DeclarerPage() {
     const isoMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
     if (isoMatch) {
       const [, year, month, day] = isoMatch;
+      return `${day}/${month}/${year}`;
+    }
+    const frMatch = value.match(/^(\d{2})[\/\-](\d{2})[\/\-](\d{4})$/);
+    if (frMatch) {
+      const [, day, month, year] = frMatch;
       return `${day}/${month}/${year}`;
     }
     return value;
@@ -150,6 +177,14 @@ function DeclarerPage() {
     setLoading(true);
 
     try {
+      const dateNaissance = formatDateForSupabase(form.dateNaissance);
+      const dateDelivrance = formatDateForSupabase(form.dateDelivrance);
+
+      if (!dateNaissance || !dateDelivrance) {
+        toast.error("Les dates doivent être au format JJ/MM/AAAA");
+        return;
+      }
+
       const numeroHash = form.numeroPiece.trim() ? await hashNumero(form.numeroPiece) : null;
       const payload: Record<string, unknown> = {
         user_id: userId,
@@ -158,9 +193,9 @@ function DeclarerPage() {
         numero_hash: numeroHash,
         nom: form.nom.trim(),
         prenom: form.prenom.trim(),
-        date_naissance: formatDateForSupabase(form.dateNaissance),
+        date_naissance: dateNaissance,
         lieu_naissance: form.lieuNaissance,
-        date_delivrance: formatDateForSupabase(form.dateDelivrance),
+        date_delivrance: dateDelivrance,
         lieu_perte_trouvaille: form.communePerte || null,
         statut: "actif",
       };
