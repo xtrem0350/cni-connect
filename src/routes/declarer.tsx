@@ -101,7 +101,14 @@ function DeclarerPage() {
     return value;
   };
 
-  const sanitizeDateInput = (value: string) => value.replace(/[^0-9/]/g, "");
+  const formatDateInput = (value: string) => {
+    const digits = value.replace(/\D/g, "").slice(0, 8);
+    const day = digits.slice(0, 2);
+    const month = digits.slice(2, 4);
+    const year = digits.slice(4, 8);
+
+    return [day, month, year].filter(Boolean).join("/");
+  };
 
   useEffect(() => {
     if (!userId) return;
@@ -305,7 +312,7 @@ function DeclarerPage() {
                 placeholder="01/01/1990"
                 value={form.dateNaissance}
                 onChange={(event) =>
-                  handleChange("dateNaissance", sanitizeDateInput(event.target.value))
+                  handleChange("dateNaissance", formatDateInput(event.target.value))
                 }
                 required
               />
@@ -332,7 +339,7 @@ function DeclarerPage() {
                 placeholder="15/06/2020"
                 value={form.dateDelivrance}
                 onChange={(event) =>
-                  handleChange("dateDelivrance", sanitizeDateInput(event.target.value))
+                  handleChange("dateDelivrance", formatDateInput(event.target.value))
                 }
                 required
               />
