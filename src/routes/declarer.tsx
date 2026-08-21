@@ -69,7 +69,7 @@ function DeclarerPage() {
       return null;
     }
 
-    const frMatch = cleaned.match(/^(\d{2})[\/\-](\d{2})[\/\-](\d{4})$/);
+    const frMatch = cleaned.match(new RegExp("^(\\d{2})[/-](\\d{2})[/-](\\d{4})$"));
     if (frMatch) {
       const [, day, month, year] = frMatch;
       const date = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
@@ -93,7 +93,7 @@ function DeclarerPage() {
       const [, year, month, day] = isoMatch;
       return `${day}/${month}/${year}`;
     }
-    const frMatch = value.match(/^(\d{2})[\/\-](\d{2})[\/\-](\d{4})$/);
+    const frMatch = value.match(new RegExp("^(\\d{2})[/-](\\d{2})[/-](\\d{4})$"));
     if (frMatch) {
       const [, day, month, year] = frMatch;
       return `${day}/${month}/${year}`;
@@ -140,8 +140,14 @@ function DeclarerPage() {
         dateDelivrance: formatDateForInput(data.date_delivrance),
         typeDocument: (data.type_document as string) ?? "CNI",
         numeroPiece: "",
-        nom: (data.nom as string | null) ?? (legacyParts.length > 1 ? legacyParts.slice(0, -1).join(" ") : legacyParts[0] ?? "") ?? "",
-        prenom: (data.prenom as string | null) ?? (legacyParts.length > 1 ? legacyParts[legacyParts.length - 1] : "") ?? "",
+        nom:
+          (data.nom as string | null) ??
+          (legacyParts.length > 1 ? legacyParts.slice(0, -1).join(" ") : (legacyParts[0] ?? "")) ??
+          "",
+        prenom:
+          (data.prenom as string | null) ??
+          (legacyParts.length > 1 ? legacyParts[legacyParts.length - 1] : "") ??
+          "",
         communePerte: data.lieu_perte_trouvaille ?? "",
       });
     })();
@@ -180,6 +186,13 @@ function DeclarerPage() {
       const dateNaissance = formatDateForSupabase(form.dateNaissance);
       const dateDelivrance = formatDateForSupabase(form.dateDelivrance);
 
+      console.log("[declarer] Dates de déclaration", {
+        naissanceBrute: form.dateNaissance,
+        naissanceFormatee: dateNaissance,
+        delivranceBrute: form.dateDelivrance,
+        delivranceFormatee: dateDelivrance,
+      });
+
       if (!dateNaissance || !dateDelivrance) {
         toast.error("Les dates doivent être au format JJ/MM/AAAA");
         return;
@@ -204,7 +217,9 @@ function DeclarerPage() {
         const { error } = await updateDeclaration(editingId, payload);
         if (error) {
           if (error.message.includes("nom") || error.message.includes("prenom")) {
-            toast.error("Le schéma Supabase n'est pas à jour. Exécutez la migration des déclarations.");
+            toast.error(
+              "Le schéma Supabase n'est pas à jour. Exécutez la migration des déclarations.",
+            );
             console.error("[declarer] schéma obsolète pour les colonnes nom/prenom", error);
             return;
           }
@@ -215,7 +230,9 @@ function DeclarerPage() {
 
         if (error) {
           if (error.message.includes("nom") || error.message.includes("prenom")) {
-            toast.error("Le schéma Supabase n'est pas à jour. Exécutez la migration des déclarations.");
+            toast.error(
+              "Le schéma Supabase n'est pas à jour. Exécutez la migration des déclarations.",
+            );
             console.error("[declarer] schéma obsolète pour les colonnes nom/prenom", error);
             return;
           }
@@ -225,7 +242,7 @@ function DeclarerPage() {
               "⚠️ [declarer] Colonne lieu_perte_trouvaille absente, nouvelle tentative sans cette colonne",
             );
             const fallbackPayload: Record<string, unknown> = { ...payload };
-            delete fallbackPayload.lieu_perte_trouvaille;
+            delete fallbackPayload["lieu_perte_trouvaille"];
             const fallback = await createDeclaration(fallbackPayload);
             if (fallback.error) throw fallback.error;
             return;
@@ -287,7 +304,9 @@ function DeclarerPage() {
                 inputMode="numeric"
                 placeholder="01/01/1990"
                 value={form.dateNaissance}
-                onChange={(event) => handleChange("dateNaissance", sanitizeDateInput(event.target.value))}
+                onChange={(event) =>
+                  handleChange("dateNaissance", sanitizeDateInput(event.target.value))
+                }
                 required
               />
             </div>
@@ -312,7 +331,9 @@ function DeclarerPage() {
                 inputMode="numeric"
                 placeholder="15/06/2020"
                 value={form.dateDelivrance}
-                onChange={(event) => handleChange("dateDelivrance", sanitizeDateInput(event.target.value))}
+                onChange={(event) =>
+                  handleChange("dateDelivrance", sanitizeDateInput(event.target.value))
+                }
                 required
               />
             </div>
