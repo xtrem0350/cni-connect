@@ -92,6 +92,22 @@ $$ LANGUAGE plpgsql;
 -- 5. Update RLS policies for profiles
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 
+CREATE OR REPLACE FUNCTION public.is_admin_profile()
+RETURNS boolean
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT COALESCE(
+    (
+      SELECT p.is_admin
+      FROM public.profiles AS p
+      WHERE p.id = auth.uid()
+    ),
+    false
+  );
+$$;
+
 -- Drop existing policies if they exist
 DROP POLICY IF EXISTS "Users can view their own profile" ON profiles;
 DROP POLICY IF EXISTS "Users can update their own profile" ON profiles;
@@ -109,12 +125,7 @@ CREATE POLICY "Users can update their own profile"
 
 CREATE POLICY "Admins can view all profiles"
   ON profiles FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM profiles
-      WHERE id = auth.uid() AND is_admin = true
-    )
-  );
+  USING (public.is_admin_profile());
 
 -- 6. Update RLS for otp_codes (should not be directly accessible)
 ALTER TABLE otp_codes ENABLE ROW LEVEL SECURITY;

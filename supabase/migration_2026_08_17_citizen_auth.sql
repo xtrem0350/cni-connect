@@ -28,6 +28,11 @@ $$ LANGUAGE plpgsql;
 -- 4. Politiques de sécurité (RLS) sans récursion infinie
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view their own profile" ON profiles;
+DROP POLICY IF EXISTS "Citizens can view their own profile" ON profiles;
+DROP POLICY IF EXISTS "Admins can view all profiles" ON profiles;
+DROP POLICY IF EXISTS "profils lisibles par le proprietaire" ON profiles;
+
 CREATE OR REPLACE FUNCTION public.is_admin_profile()
 RETURNS boolean
 LANGUAGE sql
