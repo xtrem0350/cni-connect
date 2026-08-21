@@ -54,17 +54,31 @@ create table if not exists public.declarations (
   user_id uuid not null references auth.users(id) on delete cascade,
   type declaration_type not null,
   type_document text not null default 'CNI',
-  numero_hash text not null,               -- SHA-256 du numéro, jamais le numéro en clair
+  numero_hash text,
+  nom text,
+  prenom text,
   nom_porteur text,
   date_naissance date not null,
   lieu_naissance text not null,
   date_delivrance date not null,
   lieu_perte_trouvaille text,
+  description text,
   commentaire text,
   statut text not null default 'actif',    -- actif | resolu | archive
   last_matched_at timestamptz,
   created_at timestamptz not null default now()
 );
+
+alter table public.declarations
+  add column if not exists numero_hash text,
+  add column if not exists nom text,
+  add column if not exists prenom text,
+  add column if not exists nom_porteur text,
+  add column if not exists description text,
+  add column if not exists type_document text default 'CNI';
+
+alter table public.declarations
+  alter column numero_hash drop not null;
 
 create index if not exists idx_declarations_match
   on public.declarations (date_naissance, lieu_naissance, date_delivrance);

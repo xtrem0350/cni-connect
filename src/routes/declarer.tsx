@@ -51,6 +51,31 @@ function DeclarerPage() {
     communePerte: "",
   });
 
+  const formatDateForSupabase = (value: string) => {
+    if (!value) return null;
+    const isoMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (isoMatch) {
+      const [, year, month, day] = isoMatch;
+      return `${year}-${month}-${day}`;
+    }
+    const frMatch = value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (!frMatch) return null;
+    const [, day, month, year] = frMatch;
+    return `${year}-${month}-${day}`;
+  };
+
+  const formatDateForInput = (value: string | null | undefined) => {
+    if (!value) return "";
+    const isoMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (isoMatch) {
+      const [, year, month, day] = isoMatch;
+      return `${day}/${month}/${year}`;
+    }
+    return value;
+  };
+
+  const sanitizeDateInput = (value: string) => value.replace(/[^0-9/]/g, "");
+
   useEffect(() => {
     if (!userId) return;
 
@@ -76,17 +101,20 @@ function DeclarerPage() {
 
       if (!data) return;
 
+      const legacyNomPorteur = typeof data.nom_porteur === "string" ? data.nom_porteur : "";
+      const legacyParts = legacyNomPorteur.trim().split(/\s+/).filter(Boolean);
+
       setEditingId(declarationId);
       setType((data.type as "perdu" | "trouve") ?? "perdu");
       setDocumentType((data.type_document as string) ?? "CNI");
       setForm({
-        dateNaissance: data.date_naissance ?? "",
+        dateNaissance: formatDateForInput(data.date_naissance),
         lieuNaissance: data.lieu_naissance ?? "",
-        dateDelivrance: data.date_delivrance ?? "",
+        dateDelivrance: formatDateForInput(data.date_delivrance),
         typeDocument: (data.type_document as string) ?? "CNI",
         numeroPiece: "",
-        nom: data.nom_porteur ?? "",
-        prenom: "",
+        nom: (data.nom as string | null) ?? (legacyParts.length > 1 ? legacyParts.slice(0, -1).join(" ") : legacyParts[0] ?? "") ?? "",
+        prenom: (data.prenom as string | null) ?? (legacyParts.length > 1 ? legacyParts[legacyParts.length - 1] : "") ?? "",
         communePerte: data.lieu_perte_trouvaille ?? "",
       });
     })();
@@ -123,32 +151,54 @@ function DeclarerPage() {
 
     try {
       const numeroHash = form.numeroPiece.trim() ? await hashNumero(form.numeroPiece) : null;
-      const payload = {
+      const basePayload: Record<string, unknown> = {
         user_id: userId,
         type,
         type_document: documentType,
         numero_hash: numeroHash,
-        nom_porteur: `${form.nom.trim()} ${form.prenom.trim()}`.trim(),
-        date_naissance: form.dateNaissance,
+        nom: form.nom.trim(),
+        prenom: form.prenom.trim(),
+        date_naissance: formatDateForSupabase(form.dateNaissance),
         lieu_naissance: form.lieuNaissance,
-        date_delivrance: form.dateDelivrance,
+        date_delivrance: formatDateForSupabase(form.dateDelivrance),
         lieu_perte_trouvaille: form.communePerte || null,
         statut: "actif",
       };
 
+      const legacyPayload: Record<string, unknown> = {
+        ...basePayload,
+        nom_porteur: `${form.nom.trim()} ${form.prenom.trim()}`.trim(),
+      };
+      delete legacyPayload.nom;
+      delete legacyPayload.prenom;
+
       if (editingId) {
-        const { error } = await updateDeclaration(editingId, payload);
-        if (error) throw error;
+        const { error } = await updateDeclaration(editingId, basePayload);
+        if (error && error.message.includes("nom") && error.message.includes("prenom")) {
+          const fallback = await updateDeclaration(editingId, legacyPayload);
+          if (fallback.error) throw fallback.error;
+        } else if (error) {
+          throw error;
+        }
       } else {
-        let { error } = await createDeclaration(payload);
+        let { error } = await createDeclaration(basePayload);
+
+        if (
+          error &&
+          (error.message.includes("nom") || error.message.includes("prenom") || error.message.includes("nom_porteur"))
+        ) {
+          ({ error } = await createDeclaration(legacyPayload));
+        }
+
         if (error?.code === "PGRST204" && error.message.includes("lieu_perte_trouvaille")) {
           console.warn(
             "⚠️ [declarer] Colonne lieu_perte_trouvaille absente, nouvelle tentative sans cette colonne",
           );
-          const fallbackPayload: Record<string, unknown> = { ...payload };
+          const fallbackPayload: Record<string, unknown> = { ...legacyPayload };
           delete fallbackPayload.lieu_perte_trouvaille;
           ({ error } = await createDeclaration(fallbackPayload));
         }
+
         if (error) throw error;
       }
 
@@ -197,14 +247,14 @@ function DeclarerPage() {
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label htmlFor="birth-date">Date de naissance *</Label>
+              <Label htmlFor="birth-date">Date de naissance * (JJ/MM/AAAA)</Label>
               <Input
                 id="birth-date"
-                type="date"
+                type="text"
+                inputMode="numeric"
+                placeholder="01/01/1990"
                 value={form.dateNaissance}
-                onChange={(event) => handleChange("dateNaissance", event.target.value)}
-                min={minBirthDate}
-                max={maxBirthDate}
+                onChange={(event) => handleChange("dateNaissance", sanitizeDateInput(event.target.value))}
                 required
               />
             </div>
@@ -222,19 +272,19 @@ function DeclarerPage() {
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label htmlFor="issue-date">Date de délivrance *</Label>
+              <Label htmlFor="issue-date">Date de délivrance * (JJ/MM/AAAA)</Label>
               <Input
                 id="issue-date"
-                type="date"
+                type="text"
+                inputMode="numeric"
+                placeholder="15/06/2020"
                 value={form.dateDelivrance}
-                onChange={(event) => handleChange("dateDelivrance", event.target.value)}
-                min={minBirthDate}
-                max={maxBirthDate}
+                onChange={(event) => handleChange("dateDelivrance", sanitizeDateInput(event.target.value))}
                 required
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="document-type">Type de document *</Label>
+              <Label htmlFor="document-type">Type de pièce *</Label>
               <Input
                 id="document-type"
                 value={form.typeDocument}
