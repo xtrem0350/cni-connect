@@ -14,7 +14,34 @@ export function AdminPanel({ onClose }: AdminPanelProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [resettingDatabase, setResettingDatabase] = useState(false);
   const [activeTab, setActiveTab] = useState("login");
+
+  const handleResetDatabase = async () => {
+    if (
+      !window.confirm(
+        "ATTENTION : toutes les données de test seront supprimées, y compris les comptes Auth. Continuer ?",
+      ) ||
+      !window.confirm("Dernière confirmation : cette suppression est irréversible.")
+    ) {
+      return;
+    }
+
+    setResettingDatabase(true);
+    try {
+      const { error } = await supabase.rpc("reset_test_database", { reset_code: "@Cni" });
+      if (error) throw error;
+      window.sessionStorage.clear();
+      window.localStorage.clear();
+      toast.success("Base de test vidée. Rechargement de l'application...");
+      window.setTimeout(() => window.location.assign("/"), 800);
+    } catch (error) {
+      console.error("[admin] Échec de la remise à zéro de la base", error);
+      toast.error("Impossible de vider la base. Exécutez d'abord la migration Supabase.");
+    } finally {
+      setResettingDatabase(false);
+    }
+  };
 
   // Inscription Admin
   const handleSignUp = async (e: React.FormEvent) => {
@@ -139,6 +166,21 @@ export function AdminPanel({ onClose }: AdminPanelProps) {
           </form>
         </TabsContent>
       </Tabs>
+
+      <div className="mt-6 space-y-2 border-t border-red-200 pt-4">
+        <p className="text-xs font-semibold uppercase tracking-wide text-red-700">
+          Outil de test temporaire
+        </p>
+        <Button
+          type="button"
+          variant="destructive"
+          className="w-full"
+          onClick={() => void handleResetDatabase()}
+          disabled={resettingDatabase}
+        >
+          {resettingDatabase ? "Suppression en cours..." : "Vider toute la base de test"}
+        </Button>
+      </div>
 
       <Button variant="ghost" onClick={onClose} className="w-full mt-4 text-sm text-gray-500">
         ← Retour

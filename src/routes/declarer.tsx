@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
 import { createDeclaration, updateDeclaration } from "@/services/declarationService";
 import { supabase } from "@/integrations/supabase";
@@ -43,7 +44,8 @@ function DeclarerPage() {
   const [form, setForm] = useState({
     dateNaissance: "",
     lieuNaissance: "",
-    dateDelivrance: "",
+    periodeDebut: "",
+    periodeFin: "",
     typeDocument: "CNI",
     numeroPiece: "",
     nom: "",
@@ -144,7 +146,8 @@ function DeclarerPage() {
       setForm({
         dateNaissance: formatDateForInput(data.date_naissance),
         lieuNaissance: data.lieu_naissance ?? "",
-        dateDelivrance: formatDateForInput(data.date_delivrance),
+        periodeDebut: (data.periode_debut as string | null) ?? data.date_delivrance?.slice(0, 4) ?? "",
+        periodeFin: (data.periode_fin as string | null) ?? data.date_delivrance?.slice(0, 4) ?? "",
         typeDocument: (data.type_document as string) ?? "CNI",
         numeroPiece: "",
         nom:
@@ -169,7 +172,9 @@ function DeclarerPage() {
     form.prenom.trim() !== "" &&
     form.dateNaissance.trim() !== "" &&
     form.lieuNaissance.trim() !== "" &&
-    form.dateDelivrance.trim() !== "" &&
+    form.periodeDebut.trim() !== "" &&
+    form.periodeFin.trim() !== "" &&
+    Number(form.periodeFin) >= Number(form.periodeDebut) &&
     documentType.trim() !== "";
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -178,7 +183,8 @@ function DeclarerPage() {
     if (
       !form.dateNaissance ||
       !form.lieuNaissance ||
-      !form.dateDelivrance ||
+      !form.periodeDebut ||
+      !form.periodeFin ||
       !form.typeDocument ||
       !form.nom.trim() ||
       !form.prenom.trim()
@@ -191,17 +197,25 @@ function DeclarerPage() {
 
     try {
       const dateNaissance = formatDateForSupabase(form.dateNaissance);
-      const dateDelivrance = formatDateForSupabase(form.dateDelivrance);
+      const periodeDebut = Number(form.periodeDebut);
+      const periodeFin = Number(form.periodeFin);
 
       console.log("[declarer] Dates de déclaration", {
         naissanceBrute: form.dateNaissance,
         naissanceFormatee: dateNaissance,
-        delivranceBrute: form.dateDelivrance,
-        delivranceFormatee: dateDelivrance,
+        periodeDebut: form.periodeDebut,
+        periodeFin: form.periodeFin,
       });
 
-      if (!dateNaissance || !dateDelivrance) {
-        toast.error("Les dates doivent être au format JJ/MM/AAAA");
+      if (
+        !dateNaissance ||
+        !Number.isInteger(periodeDebut) ||
+        !Number.isInteger(periodeFin) ||
+        periodeDebut < new Date().getFullYear() - 30 ||
+        periodeFin > new Date().getFullYear() ||
+        periodeFin < periodeDebut
+      ) {
+        toast.error("Veuillez sélectionner une période de délivrance valide");
         return;
       }
 
@@ -215,7 +229,9 @@ function DeclarerPage() {
         prenom: form.prenom.trim(),
         date_naissance: dateNaissance,
         lieu_naissance: form.lieuNaissance,
-        date_delivrance: dateDelivrance,
+        date_delivrance: `${periodeDebut}-01-01`,
+        periode_debut: String(periodeDebut),
+        periode_fin: String(periodeFin),
         lieu_perte_trouvaille: form.communePerte || null,
         statut: "actif",
       };
@@ -329,21 +345,66 @@ function DeclarerPage() {
             </div>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <Label htmlFor="issue-date">Date de délivrance * (JJ/MM/AAAA)</Label>
-              <Input
-                id="issue-date"
-                type="text"
-                inputMode="numeric"
-                placeholder="15/06/2020"
-                value={form.dateDelivrance}
-                onChange={(event) =>
-                  handleChange("dateDelivrance", formatDateInput(event.target.value))
-                }
-                required
-              />
+          <div className="space-y-2">
+            <Label>Période de délivrance *</Label>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label htmlFor="issue-year-start" className="text-xs text-muted-foreground">
+                  De
+                </Label>
+                <Select
+                  value={form.periodeDebut}
+                  onValueChange={(value) => handleChange("periodeDebut", value)}
+                >
+                  <SelectTrigger id="issue-year-start">
+                    <SelectValue placeholder="Année" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({ length: 31 }, (_, index) => {
+                      const year = new Date().getFullYear() - index;
+                      return (
+                        <SelectItem key={year} value={String(year)}>
+                          {year}
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="issue-year-end" className="text-xs text-muted-foreground">
+                  À
+                </Label>
+                <Select
+                  value={form.periodeFin}
+                  onValueChange={(value) => handleChange("periodeFin", value)}
+                >
+                  <SelectTrigger id="issue-year-end">
+                    <SelectValue placeholder="Année" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({ length: 31 }, (_, index) => {
+                      const year = new Date().getFullYear() - index;
+                      return (
+                        <SelectItem key={year} value={String(year)}>
+                          {year}
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
+            {form.periodeDebut &&
+              form.periodeFin &&
+              Number(form.periodeFin) < Number(form.periodeDebut) && (
+                <p className="text-sm text-red-500">
+                  L&apos;année de fin doit être postérieure ou égale à l&apos;année de début
+                </p>
+              )}
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label htmlFor="document-type">Type de pièce *</Label>
               <Input

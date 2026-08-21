@@ -61,6 +61,8 @@ create table if not exists public.declarations (
   date_naissance date not null,
   lieu_naissance text not null,
   date_delivrance date not null,
+  periode_debut text,
+  periode_fin text,
   lieu_perte_trouvaille text,
   description text,
   commentaire text,
@@ -75,7 +77,9 @@ alter table public.declarations
   add column if not exists prenom text,
   add column if not exists nom_porteur text,
   add column if not exists description text,
-  add column if not exists type_document text default 'CNI';
+  add column if not exists type_document text default 'CNI',
+  add column if not exists periode_debut text,
+  add column if not exists periode_fin text;
 
 alter table public.declarations
   alter column numero_hash drop not null;
@@ -183,7 +187,21 @@ begin
     and d.type_document = new.type_document
     and d.date_naissance = new.date_naissance
     and lower(trim(d.lieu_naissance)) = lower(trim(new.lieu_naissance))
-    and d.date_delivrance = new.date_delivrance
+    and (
+      (
+        d.periode_debut is not null
+        and d.periode_fin is not null
+        and new.periode_debut is not null
+        and new.periode_fin is not null
+        and greatest(d.periode_debut::int, new.periode_debut::int)
+          <= least(d.periode_fin::int, new.periode_fin::int)
+      )
+      or (
+        d.periode_debut is null
+        and new.periode_debut is null
+        and d.date_delivrance = new.date_delivrance
+      )
+    )
   on conflict (declaration_perdu_id, declaration_trouve_id) do nothing;
 
   update public.declarations set last_matched_at = now()
@@ -285,6 +303,28 @@ create policy "paiements lisibles par le proprietaire" on public.paiements
 drop policy if exists "paiements creables par le proprietaire" on public.paiements;
 create policy "paiements creables par le proprietaire" on public.paiements
   for insert to authenticated with check (auth.uid() = user_id);
+
+-- ---------- OUTIL DE TEST TEMPORAIRE --------------------------------
+-- A supprimer avant la mise en production.
+create or replace function public.reset_test_database(reset_code text)
+returns void language plpgsql security definer set search_path = public, auth as $$
+begin
+  if reset_code is distinct from '@Cni' then
+    raise exception 'Code de remise a zero invalide';
+  end if;
+
+  delete from public.paiements;
+  delete from public.signalements;
+  delete from public.messages;
+  delete from public.matchs;
+  delete from public.declarations;
+  delete from public.profiles;
+  delete from auth.users;
+end;
+$$;
+
+revoke all on function public.reset_test_database(text) from public;
+grant execute on function public.reset_test_database(text) to anon, authenticated;
 
 -- ---------- STATISTIQUES PUBLIQUES ----------------------------------
 create or replace function public.get_stats()
