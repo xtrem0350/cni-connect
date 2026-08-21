@@ -151,7 +151,7 @@ function DeclarerPage() {
 
     try {
       const numeroHash = form.numeroPiece.trim() ? await hashNumero(form.numeroPiece) : null;
-      const basePayload: Record<string, unknown> = {
+      const payload: Record<string, unknown> = {
         user_id: userId,
         type,
         type_document: documentType,
@@ -165,41 +165,39 @@ function DeclarerPage() {
         statut: "actif",
       };
 
-      const legacyPayload: Record<string, unknown> = {
-        ...basePayload,
-        nom_porteur: `${form.nom.trim()} ${form.prenom.trim()}`.trim(),
-      };
-      delete legacyPayload.nom;
-      delete legacyPayload.prenom;
-
       if (editingId) {
-        const { error } = await updateDeclaration(editingId, basePayload);
-        if (error && error.message.includes("nom") && error.message.includes("prenom")) {
-          const fallback = await updateDeclaration(editingId, legacyPayload);
-          if (fallback.error) throw fallback.error;
-        } else if (error) {
+        const { error } = await updateDeclaration(editingId, payload);
+        if (error) {
+          if (error.message.includes("nom") || error.message.includes("prenom")) {
+            toast.error("Le schéma Supabase n'est pas à jour. Exécutez la migration des déclarations.");
+            console.error("[declarer] schéma obsolète pour les colonnes nom/prenom", error);
+            return;
+          }
           throw error;
         }
       } else {
-        let { error } = await createDeclaration(basePayload);
+        const { error } = await createDeclaration(payload);
 
-        if (
-          error &&
-          (error.message.includes("nom") || error.message.includes("prenom") || error.message.includes("nom_porteur"))
-        ) {
-          ({ error } = await createDeclaration(legacyPayload));
+        if (error) {
+          if (error.message.includes("nom") || error.message.includes("prenom")) {
+            toast.error("Le schéma Supabase n'est pas à jour. Exécutez la migration des déclarations.");
+            console.error("[declarer] schéma obsolète pour les colonnes nom/prenom", error);
+            return;
+          }
+
+          if (error?.code === "PGRST204" && error.message.includes("lieu_perte_trouvaille")) {
+            console.warn(
+              "⚠️ [declarer] Colonne lieu_perte_trouvaille absente, nouvelle tentative sans cette colonne",
+            );
+            const fallbackPayload: Record<string, unknown> = { ...payload };
+            delete fallbackPayload.lieu_perte_trouvaille;
+            const fallback = await createDeclaration(fallbackPayload);
+            if (fallback.error) throw fallback.error;
+            return;
+          }
+
+          throw error;
         }
-
-        if (error?.code === "PGRST204" && error.message.includes("lieu_perte_trouvaille")) {
-          console.warn(
-            "⚠️ [declarer] Colonne lieu_perte_trouvaille absente, nouvelle tentative sans cette colonne",
-          );
-          const fallbackPayload: Record<string, unknown> = { ...legacyPayload };
-          delete fallbackPayload.lieu_perte_trouvaille;
-          ({ error } = await createDeclaration(fallbackPayload));
-        }
-
-        if (error) throw error;
       }
 
       navigate({ to: "/dashboard" });
