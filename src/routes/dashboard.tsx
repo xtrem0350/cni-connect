@@ -147,6 +147,24 @@ function DashboardPage() {
           <p className="mt-1 text-sm text-muted-foreground">Statut : {statusLabel}</p>
         </div>
 
+        <div className="flex flex-wrap gap-3">
+          <Button
+            asChild
+            className={
+              isPerdu
+                ? "bg-red-600 text-white hover:bg-red-700"
+                : "bg-green-600 text-white hover:bg-green-700"
+            }
+          >
+            <Link to="/declarer" search={{ type: declarationType }}>
+              {declarationLabel}
+            </Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link to="/mes-declarations">📋 Voir mes déclarations</Link>
+          </Button>
+        </div>
+
         <div className="grid gap-4 md:grid-cols-3">
           <Card>
             <CardHeader className="pb-3">
@@ -172,24 +190,6 @@ function DashboardPage() {
               <p className="text-3xl font-bold text-primary">0</p>
             </CardContent>
           </Card>
-        </div>
-
-        <div className="flex flex-wrap gap-3">
-          <Button
-            asChild
-            className={
-              isPerdu
-                ? "bg-red-600 text-white hover:bg-red-700"
-                : "bg-green-600 text-white hover:bg-green-700"
-            }
-          >
-            <Link to="/declarer" search={{ type: declarationType }}>
-              {declarationLabel}
-            </Link>
-          </Button>
-          <Button asChild variant="outline">
-            <Link to="/mes-declarations">📋 Voir mes déclarations</Link>
-          </Button>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
