@@ -3,6 +3,13 @@ Structure du projet (avec glob)
 
 ├── 📁 supabase/
 │   ├── 📄 schema.sql
+│   ├── 📄 migration_2026_08_22_document_photos_protection.sql
+│   ├── 📄 migration_2026_08_21_reset_test_database.sql
+│   ├── 📄 migration_2026_08_21_fix_profiles_rls.sql
+│   ├── 📄 migration_2026_08_21_fix_declaration_match_constraint.sql
+│   ├── 📄 migration_2026_08_21_document_photos.sql
+│   ├── 📄 migration_2026_08_20_profile_contact_columns.sql
+│   ├── 📄 migration_2026_08_20_declaration_fields.sql
 │   ├── 📄 migration_2026_08_17_citizen_auth.sql
 │   └── 📄 migration_2026_08_16_whatsapp_auth_old.sql
 ├── 📁 src/
@@ -17,6 +24,8 @@ Structure du projet (avec glob)
 │   │   ├── 📄 chatService.ts
 │   │   └── 📄 authService.ts
 │   ├── 📁 routes/
+│   │   ├── 📁 chat/
+│   │   │   └── 📄 $matchId.tsx
 │   │   ├── 📄 __root.tsx
 │   │   ├── 📄 statut.tsx
 │   │   ├── 📄 signalements.tsx
@@ -32,6 +41,7 @@ Structure du projet (avec glob)
 │   │   ├── 📄 declarations.tsx
 │   │   ├── 📄 dashboard.tsx
 │   │   ├── 📄 chat.tsx
+│   │   ├── 📄 chat
 │   │   └── 📄 auth.tsx
 │   ├── 📁 lib/
 │   │   ├── 📄 utils.ts
@@ -94,6 +104,8 @@ Structure du projet (avec glob)
 │   │   │   └── 📄 accordion.tsx
 │   │   ├── 📄 ui
 │   │   ├── 📄 StatusBadge.tsx
+│   │   ├── 📄 SplashScreen.tsx
+│   │   ├── 📄 SiteProtection.tsx
 │   │   ├── 📄 SecurityBadge.tsx
 │   │   ├── 📄 PhoneInput.tsx
 │   │   ├── 📄 Navigation.tsx
@@ -140,13 +152,16 @@ Structure du projet (avec glob)
 ├── 📄 node
 ├── 📄 liste.mjs
 ├── 📄 IMPLEMENTATION_FINALE.md
+├── 📄 git
 ├── 📄 eslint.config.js
 ├── 📄 doc
 ├── 📄 components.json
 ├── 📄 cd
 ├── 📄 bunfig.toml
 ├── 📄 bun.lock
+├── 📄 buildlog.txt
 ├── 📄 build.log
 ├── 📄 build-output.txt
 ├── 📄 build-exit.txt
-└── 📄 AGENTS.md
+├── 📄 AGENTS.md
+└── 📄 #
