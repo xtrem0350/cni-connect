@@ -46,6 +46,7 @@ function DeclarerPage() {
   const [photoPath, setPhotoPath] = useState<string | null>(null);
   const [form, setForm] = useState({
     dateNaissance: "",
+    dateDelivrance: "",
     lieuNaissance: "",
     periodeDebut: "",
     periodeFin: "",
@@ -157,10 +158,6 @@ function DeclarerPage() {
   }, [photoPreview]);
 
   useEffect(() => {
-    if (type === "perdu") clearPhoto();
-  }, [type]);
-
-  useEffect(() => {
     if (!userId) return;
 
     const params = new URLSearchParams(window.location.search);
@@ -193,6 +190,8 @@ function DeclarerPage() {
       setDocumentType((data.type_document as string) ?? "CNI");
       setForm({
         dateNaissance: formatDateForInput(data.date_naissance),
+        dateDelivrance:
+          data.type === "trouve" ? formatDateForInput(data.date_delivrance) : "",
         lieuNaissance: data.lieu_naissance ?? "",
         periodeDebut: (data.periode_debut as string | null) ?? data.date_delivrance?.slice(0, 4) ?? "",
         periodeFin: (data.periode_fin as string | null) ?? data.date_delivrance?.slice(0, 4) ?? "",
@@ -228,11 +227,12 @@ function DeclarerPage() {
     form.prenom.trim() !== "" &&
     form.dateNaissance.trim() !== "" &&
     form.lieuNaissance.trim() !== "" &&
-    form.periodeDebut.trim() !== "" &&
-    form.periodeFin.trim() !== "" &&
-    Number(form.periodeFin) >= Number(form.periodeDebut) &&
     documentType.trim() !== "" &&
-    (type !== "trouve" || Boolean(photo || photoPath));
+    (type === "perdu"
+      ? form.periodeDebut.trim() !== "" &&
+        form.periodeFin.trim() !== "" &&
+        Number(form.periodeFin) >= Number(form.periodeDebut)
+      : Boolean(form.dateDelivrance.trim() && (photo || photoPath)));
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -240,12 +240,11 @@ function DeclarerPage() {
     if (
       !form.dateNaissance ||
       !form.lieuNaissance ||
-      !form.periodeDebut ||
-      !form.periodeFin ||
       !form.typeDocument ||
       !form.nom.trim() ||
-      !form.prenom.trim()
-      || (type === "trouve" && !photo && !photoPath)
+      !form.prenom.trim() ||
+      (type === "perdu" && (!form.periodeDebut || !form.periodeFin)) ||
+      (type === "trouve" && (!form.dateDelivrance || (!photo && !photoPath)))
     ) {
       toast.error("Veuillez compléter tous les champs obligatoires");
       return;
@@ -257,6 +256,8 @@ function DeclarerPage() {
       const dateNaissance = formatDateForSupabase(form.dateNaissance);
       const periodeDebut = Number(form.periodeDebut);
       const periodeFin = Number(form.periodeFin);
+      const dateDelivrance =
+        type === "trouve" ? formatDateForSupabase(form.dateDelivrance) : null;
 
       console.log("[declarer] Dates de déclaration", {
         naissanceBrute: form.dateNaissance,
@@ -267,18 +268,25 @@ function DeclarerPage() {
 
       if (
         !dateNaissance ||
-        !Number.isInteger(periodeDebut) ||
-        !Number.isInteger(periodeFin) ||
-        periodeDebut < new Date().getFullYear() - 30 ||
-        periodeFin > new Date().getFullYear() ||
-        periodeFin < periodeDebut
+        (type === "perdu" &&
+          (!Number.isInteger(periodeDebut) ||
+            !Number.isInteger(periodeFin) ||
+            periodeDebut < new Date().getFullYear() - 30 ||
+            periodeFin > new Date().getFullYear() ||
+            periodeFin < periodeDebut)) ||
+        (type === "trouve" && !dateDelivrance)
       ) {
-        toast.error("Veuillez sélectionner une période de délivrance valide");
+        toast.error(
+          type === "trouve"
+            ? "Veuillez saisir une date de délivrance valide (JJ/MM/AAAA)"
+            : "Veuillez sélectionner une période de délivrance valide",
+        );
         return;
       }
 
       const numeroHash = form.numeroPiece.trim() ? await hashNumero(form.numeroPiece) : null;
-      const uploadedPhotoPath = type === "trouve" && photo ? await uploadPhoto(photo, userId) : photoPath;
+      const uploadedPhotoPath =
+        type === "trouve" && photo ? await uploadPhoto(photo, userId) : type === "trouve" ? photoPath : null;
       const payload: Record<string, unknown> = {
         user_id: userId,
         type,
@@ -288,11 +296,11 @@ function DeclarerPage() {
         prenom: form.prenom.trim(),
         date_naissance: dateNaissance,
         lieu_naissance: form.lieuNaissance,
-        date_delivrance: `${periodeDebut}-01-01`,
-        periode_debut: String(periodeDebut),
-        periode_fin: String(periodeFin),
+        date_delivrance: type === "trouve" ? dateDelivrance : `${periodeDebut}-01-01`,
+        periode_debut: type === "perdu" ? String(periodeDebut) : null,
+        periode_fin: type === "perdu" ? String(periodeFin) : null,
         lieu_perte_trouvaille: form.communePerte || null,
-        photo_url: type === "trouve" ? uploadedPhotoPath : null,
+        photo_url: uploadedPhotoPath,
         statut: "actif",
       };
 
@@ -405,8 +413,12 @@ function DeclarerPage() {
             </div>
           </div>
 
+          {type === "perdu" ? (
           <div className="space-y-2">
-            <Label>Période de délivrance *</Label>
+            <Label>Période de délivrance (estimation) *</Label>
+            <p className="text-xs text-muted-foreground">
+              Si vous ne connaissez pas la date exacte, indiquez la période estimée.
+            </p>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <Label htmlFor="issue-year-start" className="text-xs text-muted-foreground">
@@ -463,10 +475,33 @@ function DeclarerPage() {
                 </p>
               )}
           </div>
-
-          {type === "trouve" ? (
+          ) : (
             <div className="space-y-2">
-              <Label htmlFor="document-photo">Photo du document trouvé *</Label>
+              <Label htmlFor="issue-date">Date de délivrance * (JJ/MM/AAAA)</Label>
+              <p className="text-xs text-muted-foreground">
+                La date est indiquée sur le document trouvé.
+              </p>
+              <Input
+                id="issue-date"
+                type="text"
+                inputMode="numeric"
+                placeholder="15/06/2020"
+                value={form.dateDelivrance}
+                onChange={(event) =>
+                  handleChange("dateDelivrance", formatDateInput(event.target.value))
+                }
+                required
+              />
+            </div>
+          )}
+
+          {type === "trouve" && <div className="space-y-2">
+              <Label htmlFor="document-photo">
+                Photo du document *
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                Ajoutez une photo pour voir les informations du titulaire.
+              </p>
               <div className="rounded-lg border-2 border-dashed border-border p-4 text-center">
                 {photoPreview ? (
                   <div className="space-y-3">
@@ -485,7 +520,7 @@ function DeclarerPage() {
                 ) : (
                   <>
                     <p className="text-sm text-muted-foreground">
-                      Ajoutez une photo du document trouvé
+                      Cliquez ou déposez une photo du document
                     </p>
                     <p className="mt-1 text-xs text-muted-foreground">JPG ou PNG, 5 Mo maximum</p>
                     <Input
@@ -498,8 +533,7 @@ function DeclarerPage() {
                   </>
                 )}
               </div>
-            </div>
-          ) : null}
+          </div>}
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
