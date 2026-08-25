@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
-import { HeroBanner } from "@/components/HeroBanner";
+import { ImageBanner } from "@/components/ImageBanner";
+import { IMAGES } from "@/lib/images";
 import { SecurityBadge } from "@/components/SecurityBadge";
 import {
   Accordion,
