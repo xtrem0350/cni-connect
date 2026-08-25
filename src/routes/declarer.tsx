@@ -355,10 +355,10 @@ function DeclarerPage() {
   return (
     <AppShell>
       <div className="mx-auto max-w-2xl space-y-5">
-        <HeroBanner
-          imageUrl="https://images.unsplash.com/photo-1521791055366-0d553872125f?auto=format&fit=crop&w=1400&q=80"
-          title="Déclarer un document"
-        />
+        <ImageBanner src={IMAGES.declaration} alt="Documents administratifs">
+          <h1 className="text-2xl font-bold sm:text-3xl">📄 Déclarer un document</h1>
+          <p className="text-sm opacity-90">Perdu ou trouvé, en quelques étapes</p>
+        </ImageBanner>
 
         <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-900">
           Plus vous remplissez de champs, plus vite vous trouverez votre document !
