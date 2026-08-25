@@ -23,7 +23,10 @@ function GuidePage() {
   return (
     <AppShell>
       <div className="mx-auto max-w-3xl">
-        <HeroBanner title="Guide d'utilisation" subtitle="Comment utiliser l'application" />
+        <ImageBanner src={IMAGES.guide} alt="Tutoriel pas à pas">
+          <h1 className="text-2xl font-bold sm:text-3xl">📘 Guide d'utilisation</h1>
+          <p className="text-sm opacity-90">Comment utiliser l'application</p>
+        </ImageBanner>
         <div className="mt-6 grid gap-4 md:grid-cols-3">
           {steps.map((step, index) => (
             <div key={step.title} className="surface-card p-5">
