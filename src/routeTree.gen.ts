@@ -23,6 +23,7 @@ import { Route as SecuriteRouteImport } from './routes/securite'
 import { Route as SignalementRouteImport } from './routes/signalement'
 import { Route as SignalementsRouteImport } from './routes/signalements'
 import { Route as StatutRouteImport } from './routes/statut'
+import { Route as VaultRouteImport } from './routes/vault'
 import { Route as ChatMatchIdRouteImport } from './routes/chat/$matchId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -95,6 +96,11 @@ const StatutRoute = StatutRouteImport.update({
   path: '/statut',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VaultRoute = VaultRouteImport.update({
+  id: '/vault',
+  path: '/vault',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ChatMatchIdRoute = ChatMatchIdRouteImport.update({
   id: '/$matchId',
   path: '/$matchId',
@@ -116,6 +122,7 @@ export interface FileRoutesByFullPath {
   '/signalement': typeof SignalementRoute
   '/signalements': typeof SignalementsRoute
   '/statut': typeof StatutRoute
+  '/vault': typeof VaultRoute
   '/chat/$matchId': typeof ChatMatchIdRoute
 }
 export interface FileRoutesByTo {
@@ -133,6 +140,7 @@ export interface FileRoutesByTo {
   '/signalement': typeof SignalementRoute
   '/signalements': typeof SignalementsRoute
   '/statut': typeof StatutRoute
+  '/vault': typeof VaultRoute
   '/chat/$matchId': typeof ChatMatchIdRoute
 }
 export interface FileRoutesById {
@@ -151,6 +159,7 @@ export interface FileRoutesById {
   '/signalement': typeof SignalementRoute
   '/signalements': typeof SignalementsRoute
   '/statut': typeof StatutRoute
+  '/vault': typeof VaultRoute
   '/chat/$matchId': typeof ChatMatchIdRoute
 }
 export interface FileRouteTypes {
@@ -170,6 +179,7 @@ export interface FileRouteTypes {
     | '/signalement'
     | '/signalements'
     | '/statut'
+    | '/vault'
     | '/chat/$matchId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -187,6 +197,7 @@ export interface FileRouteTypes {
     | '/signalement'
     | '/signalements'
     | '/statut'
+    | '/vault'
     | '/chat/$matchId'
   id:
     | '__root__'
@@ -204,6 +215,7 @@ export interface FileRouteTypes {
     | '/signalement'
     | '/signalements'
     | '/statut'
+    | '/vault'
     | '/chat/$matchId'
   fileRoutesById: FileRoutesById
 }
@@ -222,6 +234,7 @@ export interface RootRouteChildren {
   SignalementRoute: typeof SignalementRoute
   SignalementsRoute: typeof SignalementsRoute
   StatutRoute: typeof StatutRoute
+  VaultRoute: typeof VaultRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -324,6 +337,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StatutRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/vault': {
+      id: '/vault'
+      path: '/vault'
+      fullPath: '/vault'
+      preLoaderRoute: typeof VaultRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/chat/$matchId': {
       id: '/chat/$matchId'
       path: '/$matchId'
@@ -359,6 +379,7 @@ const rootRouteChildren: RootRouteChildren = {
   SignalementRoute: SignalementRoute,
   SignalementsRoute: SignalementsRoute,
   StatutRoute: StatutRoute,
+  VaultRoute: VaultRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

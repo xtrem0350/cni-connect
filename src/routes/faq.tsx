@@ -53,7 +53,10 @@ const QUESTIONS = [
 function Faq() {
   return (
     <AppShell>
-      <HeroBanner title="Questions fréquentes" subtitle="Tout savoir sur Retrouve CNI" />
+      <ImageBanner src={IMAGES.faq} alt="Questions et aide">
+        <h1 className="text-2xl font-bold sm:text-3xl">❓ Questions fréquentes</h1>
+        <p className="text-sm opacity-90">Tout savoir sur Retrouve CNI</p>
+      </ImageBanner>
       <SecurityBadge />
 
       <Accordion type="single" collapsible className="surface-card mt-6 divide-y divide-border px-5">
