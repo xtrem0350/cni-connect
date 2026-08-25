@@ -128,7 +128,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    void refreshProfile();
+    // Garde-fou : jamais plus de 5 s de "Chargement…"
+    const timeoutId = window.setTimeout(() => {
+      console.warn("⚠️ [useAuth] Timeout — chargement forcé");
+      setLoading(false);
+    }, 5000);
+
+    void refreshProfile().finally(() => window.clearTimeout(timeoutId));
+
+    return () => window.clearTimeout(timeoutId);
   }, []);
 
   const handleSignOut = async () => {
