@@ -52,7 +52,10 @@ const POINTS = [
 function Securite() {
   return (
     <AppShell>
-      <HeroBanner title="Sécurité" subtitle="Comment nous protégeons vos données" />
+      <ImageBanner src={IMAGES.securite} alt="Protection et sécurité des données">
+        <h1 className="text-2xl font-bold sm:text-3xl">🛡️ Sécurité</h1>
+        <p className="text-sm opacity-90">Comment nous protégeons vos données</p>
+      </ImageBanner>
       <SecurityBadge label="Aucun numéro stocké en clair" />
       <div className="mt-4" />
       <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
