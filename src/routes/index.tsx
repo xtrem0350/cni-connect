@@ -2,6 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { FileSearch, Lock, MessageSquareLock, ShieldCheck, Sparkles } from "lucide-react";
 import accueilImage from "@/assets/images/Accueil.jpg";
 import { AppShell } from "@/components/AppShell";
+import { ImageBanner } from "@/components/ImageBanner";
+import { IMAGES } from "@/lib/images";
 import { SecurityBadge } from "@/components/SecurityBadge";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "@tanstack/react-router";
