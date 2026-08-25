@@ -2,6 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { FileSearch, Lock, MessageSquareLock, ShieldCheck, Sparkles } from "lucide-react";
 import accueilImage from "@/assets/images/Accueil.jpg";
 import { AppShell } from "@/components/AppShell";
+import { ImageBanner } from "@/components/ImageBanner";
+import { IMAGES } from "@/lib/images";
 import { SecurityBadge } from "@/components/SecurityBadge";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "@tanstack/react-router";
@@ -65,42 +67,55 @@ function Accueil() {
 
   return (
     <AppShell>
-      <section className="hero-brand overflow-hidden rounded-3xl px-6 py-10 shadow-lift sm:px-10 sm:py-14">
+      <ImageBanner src={IMAGES.accueil} alt="Citoyens souriants" height="h-64 md:h-80">
         <SecurityBadge label="Aucun numéro stocké en clair" />
-        <div className="mt-6 grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
-          <div>
-            <h1 className="mt-4 text-3xl font-extrabold leading-tight sm:text-4xl">
-              Retrouvez votre CNI, sans passer par la rue
-            </h1>
-            <p className="mt-3 max-w-xl text-sm/6 opacity-90 sm:text-base/7">
-              Retrouve CNI met en relation les personnes qui ont perdu un document et celles qui l'ont
-              trouvé, partout en Côte d'Ivoire. Gratuit pour déclarer, sécurisé de bout en bout.
-            </p>
+        <h1 className="text-3xl font-extrabold leading-tight sm:text-4xl">
+          Retrouvez votre CNI, sans passer par la rue
+        </h1>
+        <p className="max-w-xl text-sm/6 opacity-90">
+          Déclarez une perte ou une trouvaille en quelques clics, partout en Côte d'Ivoire.
+        </p>
+      </ImageBanner>
+
+      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+        <button
+          type="button"
+          onClick={() => handleActionClick("perdu")}
+          className="group overflow-hidden rounded-3xl border border-border bg-card text-left shadow-sm transition-transform hover:-translate-y-1"
+        >
+          <img
+            src={IMAGES.perdu}
+            alt="Personne qui cherche un document"
+            loading="lazy"
+            className="h-36 w-full object-cover transition-transform duration-700 group-hover:scale-105"
+          />
+          <div className="flex items-center gap-3 p-5">
+            <span className="text-3xl" aria-hidden>
+              😔
+            </span>
+            <span className="text-lg font-bold text-red-600">J'AI PERDU</span>
           </div>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => handleActionClick("trouve")}
+          className="group overflow-hidden rounded-3xl border border-border bg-card text-left shadow-sm transition-transform hover:-translate-y-1"
+        >
           <img
             src={accueilImage}
-            alt="Personne cherchant un document"
-            className="h-56 w-full rounded-2xl object-cover shadow-lg"
+            alt="Personne qui ramasse un document"
+            loading="lazy"
+            className="h-36 w-full object-cover transition-transform duration-700 group-hover:scale-105"
           />
-        </div>
-        <div className="mt-7 flex flex-wrap gap-3">
-          <Button
-            onClick={() => handleActionClick("perdu")}
-            size="lg"
-            variant="secondary"
-          >
-            J'ai perdu un document
-          </Button>
-          <Button
-            onClick={() => handleActionClick("trouve")}
-            size="lg"
-            variant="outline"
-            className="border-primary-foreground/40 bg-transparent"
-          >
-            J'ai trouvé un document
-          </Button>
-        </div>
-      </section>
+          <div className="flex items-center gap-3 p-5">
+            <span className="text-3xl" aria-hidden>
+              😊
+            </span>
+            <span className="text-lg font-bold text-green-600">J'AI TROUVÉ</span>
+          </div>
+        </button>
+      </div>
 
       <section className="mt-10">
         <h2 className="text-xl font-bold">Comment ça marche&nbsp;?</h2>

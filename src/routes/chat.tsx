@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/AppShell";
-import { HeroBanner } from "@/components/HeroBanner";
+import { ImageBanner } from "@/components/ImageBanner";
+import { IMAGES } from "@/lib/images";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
@@ -48,7 +49,13 @@ function ChatPage() {
   return (
     <AppShell>
       <div className="mx-auto max-w-2xl space-y-5">
-        <HeroBanner title="Chat sécurisé" subtitle={`${matches.length} correspondance${matches.length > 1 ? "s" : ""} détectée${matches.length > 1 ? "s" : ""}`} />
+        <ImageBanner src={IMAGES.chat} alt="Deux personnes qui discutent">
+          <h1 className="text-2xl font-bold sm:text-3xl">💬 Chat sécurisé</h1>
+          <p className="text-sm opacity-90">
+            {matches.length} correspondance{matches.length > 1 ? "s" : ""} détectée
+            {matches.length > 1 ? "s" : ""}
+          </p>
+        </ImageBanner>
         {loading ? <p className="text-center text-sm text-muted-foreground">Chargement...</p> : matches.length === 0 ? (
           <div className="surface-card p-6 text-center text-sm text-muted-foreground">Aucun match en cours.</div>
         ) : (

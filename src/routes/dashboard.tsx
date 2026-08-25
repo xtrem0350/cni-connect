@@ -2,7 +2,8 @@ import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { ArrowRight, FileText, MessageSquareText, ShieldCheck } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/AppShell";
-import { HeroBanner } from "@/components/HeroBanner";
+import { ImageBanner } from "@/components/ImageBanner";
+import { IMAGES } from "@/lib/images";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
@@ -99,10 +100,12 @@ function DashboardPage() {
   );
 
   if (loading) {
-    console.log('⏳ [dashboard] loading = true -> affichage "Chargement..."');
     return (
       <AppShell>
-        <p className="py-12 text-center text-sm text-muted-foreground">Chargement...</p>
+        <div className="flex flex-col items-center gap-3 py-16">
+          <span className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          <p className="text-sm text-muted-foreground">Chargement de votre espace…</p>
+        </div>
       </AppShell>
     );
   }
@@ -134,18 +137,20 @@ function DashboardPage() {
   return (
     <AppShell>
       <div className="space-y-6">
-        <HeroBanner title="Tableau de bord" subtitle="Gérez vos déclarations" />
-
-        <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-          <h1 className="text-2xl font-bold text-foreground">
+        <ImageBanner src={IMAGES.dashboard} alt="Bureau organisé" height="h-56 md:h-72">
+          <h1 className="text-2xl font-bold sm:text-3xl">
             {greeting}, {displayName}
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">Téléphone : {displayPhone}</p>
-          <p className="mt-2 text-sm font-medium text-muted-foreground">
-            Code : <span className="font-mono text-base text-foreground">{userCode}</span>
-          </p>
-          <p className="mt-1 text-sm text-muted-foreground">Statut : {statusLabel}</p>
-        </div>
+          <div className="flex flex-wrap gap-2 text-xs font-semibold">
+            <span className="rounded-full bg-white/15 px-3 py-1 backdrop-blur">
+              📱 {displayPhone}
+            </span>
+            <span className="rounded-full bg-white/15 px-3 py-1 font-mono backdrop-blur">
+              🔑 {userCode}
+            </span>
+            <span className="rounded-full bg-white/15 px-3 py-1 backdrop-blur">{statusLabel}</span>
+          </div>
+        </ImageBanner>
 
         <div className="flex flex-wrap gap-3">
           <Button
