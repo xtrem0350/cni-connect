@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type ChangeEvent } from "react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
+import { Icon3D } from "@/components/Icon3D";
 import { ImageBanner } from "@/components/ImageBanner";
 import { IMAGES } from "@/lib/images";
 import { Button } from "@/components/ui/button";
@@ -307,8 +308,7 @@ function DeclarerPage() {
       }
 
       const numeroHash = form.numeroPiece.trim() ? await hashNumero(form.numeroPiece) : null;
-      const uploadedPhotoPath =
-        type === "trouve" && photo ? await uploadPhoto(photo, userId) : type === "trouve" ? photoPath : null;
+      const uploadedPhotoPath = photo ? await uploadPhoto(photo, userId) : photoPath;
       const payload: Record<string, unknown> = {
         user_id: userId,
         type,
@@ -323,6 +323,7 @@ function DeclarerPage() {
         periode_fin: type === "perdu" ? String(periodeFin) : null,
         lieu_perte_trouvaille: form.communePerte || null,
         photo_url: uploadedPhotoPath,
+        vault_document_id: type === "perdu" && useVaultDocument ? vaultDocument?.id ?? null : null,
         statut: "actif",
       };
 
@@ -379,11 +380,11 @@ function DeclarerPage() {
       <div className="mx-auto max-w-2xl space-y-5">
         <ImageBanner src={IMAGES.declaration} alt="Documents administratifs" overlayOpacity={60}>
           <div className="flex items-center gap-3">
-            <img
+            <Icon3D
               src="https://cdn-icons-png.flaticon.com/512/870/870091.png"
               alt="Document"
-              className="h-12 w-12 object-contain drop-shadow-[0_8px_20px_rgba(96,165,250,0.35)]"
-              loading="lazy"
+              size="lg"
+              className="drop-shadow-[0_8px_20px_rgba(96,165,250,0.35)]"
             />
             <div>
               <h1 className="text-2xl font-bold sm:text-3xl">Déclarer un document</h1>
@@ -473,6 +474,26 @@ function DeclarerPage() {
               </div>
             </div>
           ) : null}
+
+          {type === "perdu" && !vaultDocument && (
+            <div className="space-y-2">
+              <Label htmlFor="lost-document-photo">Photo du document (optionnelle)</Label>
+              <div className="rounded-lg border-2 border-dashed p-4 text-center">
+                {photoPreview ? (
+                  <div className="space-y-3">
+                    <img src={photoPreview} alt="Aperçu du document perdu" className="mx-auto max-h-64 rounded-lg object-contain" />
+                    <Button type="button" variant="destructive" size="sm" onClick={clearPhoto}>Retirer la photo</Button>
+                  </div>
+                ) : (
+                  <>
+                    <Icon3D src="https://cdn-icons-png.flaticon.com/512/5968/5968517.png" alt="Photo" size="lg" className="mx-auto opacity-50" />
+                    <p className="text-sm text-muted-foreground">Ajoutez une photo pour faciliter l'identification</p>
+                    <Input id="lost-document-photo" type="file" accept="image/*" onChange={handlePhotoChange} className="mx-auto mt-3 max-w-sm cursor-pointer" />
+                  </>
+                )}
+              </div>
+            </div>
+          )}
 
           {type === "perdu" ? (
           <div className="space-y-2">

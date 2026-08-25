@@ -45,6 +45,30 @@ create trigger on_auth_user_created
   for each row execute function public.handle_new_user();
 
 -- ---------- DECLARATIONS --------------------------------------------
+-- ---------- COFFRE NUMERIQUE ----------------------------------------
+create table if not exists public.documents_vault (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  document_type text not null default 'CNI',
+  document_name text not null,
+  file_url text not null,
+  file_size bigint,
+  mime_type text,
+  tags text[] not null default '{}',
+  description text not null default '',
+  metadata jsonb not null default '{}'::jsonb,
+  is_verified boolean not null default false,
+  verified_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+alter table public.documents_vault enable row level security;
+grant select, insert, update, delete on public.documents_vault to authenticated;
+drop policy if exists "vault proprietaire" on public.documents_vault;
+create policy "vault proprietaire" on public.documents_vault
+  for all to authenticated using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- ---------- DECLARATIONS --------------------------------------------
 do $$ begin
   create type declaration_type as enum ('perdu', 'trouve');
 exception when duplicate_object then null; end $$;
@@ -81,7 +105,8 @@ alter table public.declarations
   add column if not exists type_document text default 'CNI',
   add column if not exists periode_debut text,
   add column if not exists periode_fin text,
-  add column if not exists photo_url text;
+  add column if not exists photo_url text,
+  add column if not exists vault_document_id uuid references public.documents_vault(id) on delete set null;
 
 alter table public.declarations
   alter column numero_hash drop not null;
