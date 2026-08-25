@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
-import { HeroBanner } from "@/components/HeroBanner";
+import { ImageBanner } from "@/components/ImageBanner";
+import { IMAGES } from "@/lib/images";
 
 export const Route = createFileRoute("/guide")({
   head: () => ({
