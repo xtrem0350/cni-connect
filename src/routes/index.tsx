@@ -1,13 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 import { FileSearch, Lock, MessageSquareLock, ShieldCheck, Sparkles } from "lucide-react";
-import accueilImage from "@/assets/images/Accueil.jpg";
 import { AppShell } from "@/components/AppShell";
+import { ActionModal } from "@/components/ActionModal";
 import { ImageBanner } from "@/components/ImageBanner";
 import { IMAGES } from "@/lib/images";
 import { SecurityBadge } from "@/components/SecurityBadge";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/useAuth";
+import { Icon3D } from "@/components/Icon3D";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -54,16 +56,12 @@ const ETAPES = [
 function Accueil() {
   const { user } = useAuth();
   const router = useRouter();
+  const [modalOpen, setModalOpen] = useState(false);
 
   if (user) {
     router.navigate({ to: "/dashboard" });
     return null;
   }
-
-  const handleActionClick = (type: "perdu" | "trouve") => {
-    sessionStorage.setItem("declaration_type", type);
-    router.navigate({ to: "/auth", search: { status: type } });
-  };
 
   return (
     <AppShell>
@@ -77,45 +75,26 @@ function Accueil() {
         </p>
       </ImageBanner>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2">
-        <button
-          type="button"
-          onClick={() => handleActionClick("perdu")}
-          className="group overflow-hidden rounded-3xl border border-border bg-card text-left shadow-sm transition-transform hover:-translate-y-1"
-        >
-          <img
-            src={IMAGES.perdu}
-            alt="Personne qui cherche un document"
-            loading="lazy"
-            className="h-36 w-full object-cover transition-transform duration-700 group-hover:scale-105"
-          />
-          <div className="flex items-center gap-3 p-5">
-            <span className="text-3xl" aria-hidden>
-              😔
-            </span>
-            <span className="text-lg font-bold text-red-600">J'AI PERDU</span>
-          </div>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => handleActionClick("trouve")}
-          className="group overflow-hidden rounded-3xl border border-border bg-card text-left shadow-sm transition-transform hover:-translate-y-1"
-        >
-          <img
-            src={accueilImage}
-            alt="Personne qui ramasse un document"
-            loading="lazy"
-            className="h-36 w-full object-cover transition-transform duration-700 group-hover:scale-105"
-          />
-          <div className="flex items-center gap-3 p-5">
-            <span className="text-3xl" aria-hidden>
-              😊
-            </span>
-            <span className="text-lg font-bold text-green-600">J'AI TROUVÉ</span>
-          </div>
-        </button>
+      <div className="mt-6 flex justify-center">
+        <div className="w-full max-w-md text-center">
+          <Button
+            type="button"
+            onClick={() => setModalOpen(true)}
+            className="h-16 w-full text-lg font-bold shadow-lg transition-transform hover:scale-[1.02]"
+          >
+            <Icon3D
+              src="https://cdn-icons-png.flaticon.com/512/870/870091.png"
+              alt="Document"
+              size="sm"
+              className="mr-3"
+            />
+            Gérer vos documents administratifs
+          </Button>
+          <p className="mt-2 text-sm text-muted-foreground">Perte, trouvaille ou coffre-fort</p>
+        </div>
       </div>
+
+      <ActionModal open={modalOpen} onOpenChange={setModalOpen} />
 
       <section className="mt-10">
         <h2 className="text-xl font-bold">Comment ça marche&nbsp;?</h2>
