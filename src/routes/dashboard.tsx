@@ -100,10 +100,12 @@ function DashboardPage() {
   );
 
   if (loading) {
-    console.log('⏳ [dashboard] loading = true -> affichage "Chargement..."');
     return (
       <AppShell>
-        <p className="py-12 text-center text-sm text-muted-foreground">Chargement...</p>
+        <div className="flex flex-col items-center gap-3 py-16">
+          <span className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          <p className="text-sm text-muted-foreground">Chargement de votre espace…</p>
+        </div>
       </AppShell>
     );
   }
