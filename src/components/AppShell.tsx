@@ -48,6 +48,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       { to: "/declarer", label: "Déclarer", icon: FileSearch },
       { to: "/declarations", label: "Mes déclarations", icon: FileSearch },
       { to: "/chat", label: "Chat", icon: MessageSquare },
+      { to: "/vault", label: "Coffre", icon: ShieldCheck },
       { to: "/signalement", label: "Signaler", icon: Flag },
       { to: "/profile", label: "Profil", icon: User },
     ];

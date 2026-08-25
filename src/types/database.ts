@@ -2,7 +2,7 @@
  * Types de la base de données Supabase
  */
 
-export type DeclarationType = "perdu" | "trouve";
+export type DeclarationType = "vault" | "perdu" | "trouve";
 
 export type Profile = {
   id: string;
@@ -12,6 +12,8 @@ export type Profile = {
   status?: DeclarationType | null;
   is_admin?: boolean;
   auth_code?: string | null;
+  auth_code_perdu?: string | null;
+  auth_code_trouve?: string | null;
   citizen_code?: string | null;
   created_at?: string;
   updated_at?: string;

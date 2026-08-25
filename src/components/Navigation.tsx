@@ -14,6 +14,7 @@ const citizenItems = [
   { to: "/dashboard", label: "Tableau de bord", icon: LayoutDashboard },
   { to: "/mes-declarations", label: "Mes Déclarations", icon: FileSearch },
   { to: "/declarer", label: "Déclarer", icon: FileSearch },
+  { to: "/vault", label: "Coffre fort", icon: ShieldCheck },
   { to: "/statut", label: "Statistiques", icon: ShieldCheck },
   { to: "/faq", label: "FAQ", icon: HelpCircle },
   { to: "/signalement", label: "Signaler", icon: Flag },

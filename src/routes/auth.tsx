@@ -6,6 +6,7 @@ import { HeroBanner } from "@/components/HeroBanner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { PhoneInput } from "@/components/PhoneInput";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase";
@@ -15,10 +16,11 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
-const getInitialStatus = (): "perdu" | "trouve" => {
-  if (typeof window === "undefined") return "perdu";
+const getInitialStatus = (): "vault" | "perdu" | "trouve" => {
+  if (typeof window === "undefined") return "vault";
   const value = new URLSearchParams(window.location.search).get("status");
-  return value === "trouve" ? "trouve" : "perdu";
+  if (value === "trouve" || value === "perdu") return value;
+  return "vault";
 };
 
 function AuthPage() {
@@ -27,7 +29,10 @@ function AuthPage() {
   const [step, setStep] = useState<"phone" | "code">("phone");
   const [phone, setPhone] = useState("+225");
   const [nom, setNom] = useState("");
-  const [status, setStatus] = useState<"perdu" | "trouve">(getInitialStatus);
+  const [status, setStatus] = useState<"vault" | "perdu" | "trouve">(getInitialStatus);
+  const [inscriptionType, setInscriptionType] = useState<"vault" | "perdu" | "trouve">(
+    getInitialStatus(),
+  );
   const [isNewUser, setIsNewUser] = useState<boolean | null>(null);
   const [generatedCode, setGeneratedCode] = useState("");
   const [codeFromDB, setCodeFromDB] = useState("");
@@ -40,12 +45,17 @@ function AuthPage() {
 
   if (user) return null;
 
+  useEffect(() => {
+    setStatus(inscriptionType);
+  }, [inscriptionType]);
+
   const generateCode = () => {
     const now = new Date();
     const datePart = [now.getDate(), now.getHours(), now.getMinutes(), now.getSeconds()]
       .map((part) => String(part).padStart(2, "0"))
       .join("");
-    return `${datePart}${status === "perdu" ? "P" : "T"}`;
+    const suffix = status === "perdu" ? "P" : status === "trouve" ? "T" : "V";
+    return `${datePart}${suffix}`;
   };
 
   const checkPhone = async () => {
@@ -68,7 +78,7 @@ function AuthPage() {
       console.log("📡 [auth] Vérification existence dans profiles...");
       const { data, error } = await supabase
         .from("profiles")
-        .select("auth_code, status, id, phone")
+        .select("auth_code, auth_code_perdu, auth_code_trouve, status, id, phone")
         .eq("phone", formattedPhone)
         .maybeSingle();
 
@@ -81,26 +91,57 @@ function AuthPage() {
       }
 
       if (data) {
-        console.log("✅ [auth] Citoyen EXISTANT, status:", data.status);
-        console.log("🔑 [auth] auth_code existant:", data.auth_code);
+        const existingProfile: {
+          status?: "vault" | "perdu" | "trouve" | null;
+          auth_code?: string | null;
+          auth_code_perdu?: string | null;
+          auth_code_trouve?: string | null;
+          id?: string;
+          phone?: string | null;
+        } = data as {
+          status?: "vault" | "perdu" | "trouve" | null;
+          auth_code?: string | null;
+          auth_code_perdu?: string | null;
+          auth_code_trouve?: string | null;
+          id?: string;
+          phone?: string | null;
+        };
+
+        console.log("✅ [auth] Citoyen EXISTANT, status:", existingProfile.status);
+        const selectedCode =
+          status === "perdu"
+            ? existingProfile.auth_code_perdu ?? existingProfile.auth_code ?? ""
+            : status === "trouve"
+              ? existingProfile.auth_code_trouve ?? existingProfile.auth_code ?? ""
+              : existingProfile.auth_code ?? "";
         setIsNewUser(false);
-        if (data.status !== status) {
-          console.log("🔄 [auth] Changement de statut:", data.status, "→", status);
+
+        if (selectedCode) {
+          console.log("✅ [auth] Code existant pour ce statut:", selectedCode);
+          setCodeFromDB(selectedCode);
+          setEnteredCode(selectedCode);
+        } else {
+          console.log("🔄 [auth] Aucun code pour ce statut, génération d'un nouveau code");
           const newCode = generateCode();
-          console.log("🔑 [auth] Nouveau code généré:", newCode);
+          const updatePayload: {
+            status: "vault" | "perdu" | "trouve";
+            citizen_code: string;
+            auth_code_perdu?: string;
+            auth_code_trouve?: string;
+            auth_code?: string;
+          } = { status, citizen_code: newCode };
+          if (status === "perdu") updatePayload.auth_code_perdu = newCode;
+          else if (status === "trouve") updatePayload.auth_code_trouve = newCode;
+          else updatePayload.auth_code = newCode;
+
           const { error: updateError } = await supabase
             .from("profiles")
-            .update({ status, auth_code: newCode, citizen_code: newCode })
+            .update(updatePayload)
             .eq("phone", formattedPhone);
           if (updateError) throw updateError;
           setCodeFromDB(newCode);
           setEnteredCode(newCode);
           console.log("📝 [auth] Nouveau code pré-rempli:", newCode);
-        } else {
-          console.log("✅ [auth] Même statut, code existant:", data.auth_code);
-          setCodeFromDB(data.auth_code ?? "");
-          setEnteredCode(data.auth_code ?? "");
-          console.log("📝 [auth] Code pré-rempli:", data.auth_code);
         }
         toast.info("Bienvenue ! Entrez votre code");
       } else {
@@ -149,14 +190,31 @@ function AuthPage() {
     try {
       if (isNewUser) {
         console.log("📝 [auth] Création nouveau profil...");
-        const profilePayload = {
+        const profilePayload: {
+          phone: string;
+          nom?: string | null;
+          telephone: string;
+          status: "vault" | "perdu" | "trouve";
+          citizen_code: string;
+          auth_code_perdu?: string;
+          auth_code_trouve?: string;
+          auth_code?: string;
+        } = {
           phone: formattedPhone,
           nom: nom.trim() || null,
           telephone: formattedPhone,
           status,
           citizen_code: generatedCode,
-          auth_code: enteredCode,
         };
+
+        if (status === "perdu") {
+          profilePayload.auth_code_perdu = enteredCode;
+        } else if (status === "trouve") {
+          profilePayload.auth_code_trouve = enteredCode;
+        } else {
+          profilePayload.auth_code = enteredCode;
+        }
+
         let { error: insertError } = await supabase.from("profiles").insert(profilePayload);
 
         if (insertError?.code === "PGRST204") {
@@ -220,8 +278,34 @@ function AuthPage() {
 
         {step === "phone" ? (
           <div className="space-y-4 rounded-2xl border border-border bg-card p-6 shadow-sm">
+            <div className="space-y-3">
+              <Label>Que souhaitez-vous faire ?</Label>
+              <RadioGroup value={inscriptionType} onValueChange={(value) => setInscriptionType(value as "vault" | "perdu" | "trouve")}>
+                <div className="flex items-center gap-2 rounded-lg border p-3 hover:bg-muted/50">
+                  <RadioGroupItem value="vault" id="vault" />
+                  <Label htmlFor="vault" className="cursor-pointer font-normal">
+                    <span className="mr-2 text-xl">🔒</span>
+                    Créer mon coffre fort
+                  </Label>
+                </div>
+                <div className="flex items-center gap-2 rounded-lg border p-3 hover:bg-muted/50">
+                  <RadioGroupItem value="perdu" id="perdu" />
+                  <Label htmlFor="perdu" className="cursor-pointer font-normal">
+                    <span className="mr-2 text-xl">😔</span>
+                    Déclarer une perte
+                  </Label>
+                </div>
+                <div className="flex items-center gap-2 rounded-lg border p-3 hover:bg-muted/50">
+                  <RadioGroupItem value="trouve" id="trouve" />
+                  <Label htmlFor="trouve" className="cursor-pointer font-normal">
+                    <span className="mr-2 text-xl">😊</span>
+                    Déclarer une trouvaille
+                  </Label>
+                </div>
+              </RadioGroup>
+            </div>
             <p className="text-sm text-muted-foreground">
-              Mode sélectionné : {status === "perdu" ? "📄 J'ai perdu" : "📄 J'ai trouvé"}
+              Mode sélectionné : {status === "vault" ? "🔒 Coffre fort" : status === "perdu" ? "📄 J'ai perdu" : "📄 J'ai trouvé"}
             </p>
             <PhoneInput value={phone} onChange={setPhone} defaultCountry="CI" />
             <Button className="w-full" onClick={checkPhone} disabled={loading}>

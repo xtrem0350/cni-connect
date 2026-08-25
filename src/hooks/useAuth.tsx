@@ -111,6 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     const profileToStore: Profile = {
       ...profile,
+      status: (profile.status as DeclarationType | null) ?? "vault",
       nom: profile.nom ?? "",
       telephone: profile.telephone ?? profile.phone,
     };

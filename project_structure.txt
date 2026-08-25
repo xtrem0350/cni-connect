@@ -18,6 +18,7 @@ Structure du projet (avec glob)
 │   ├── 📁 types/
 │   │   └── 📄 database.ts
 │   ├── 📁 services/
+│   │   ├── 📄 vaultService.ts
 │   │   ├── 📄 paymentService.ts
 │   │   ├── 📄 matchService.ts
 │   │   ├── 📄 declarationService.ts
@@ -113,6 +114,7 @@ Structure du projet (avec glob)
 │   │   ├── 📄 Navigation.tsx
 │   │   ├── 📄 LoadingSpinner.tsx
 │   │   ├── 📄 ImageBanner.tsx
+│   │   ├── 📄 Icon3D.tsx
 │   │   ├── 📄 HeroBanner.tsx
 │   │   ├── 📄 DocumentCard.tsx
 │   │   ├── 📄 ChatMessage.tsx
