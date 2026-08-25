@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { EyeOff, Fingerprint, KeyRound, Lock, UserCheck } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
-import { HeroBanner } from "@/components/HeroBanner";
+import { ImageBanner } from "@/components/ImageBanner";
+import { IMAGES } from "@/lib/images";
 import { SecurityBadge } from "@/components/SecurityBadge";
 
 export const Route = createFileRoute("/securite")({
