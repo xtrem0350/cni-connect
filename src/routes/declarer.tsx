@@ -11,6 +11,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
 import { createDeclaration, updateDeclaration } from "@/services/declarationService";
+import { getDocumentForDeclaration, type VaultDocument } from "@/services/vaultService";
 import { supabase } from "@/integrations/supabase";
 import { hashNumero } from "@/lib/documents";
 
@@ -45,6 +46,8 @@ function DeclarerPage() {
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState("");
   const [photoPath, setPhotoPath] = useState<string | null>(null);
+  const [vaultDocument, setVaultDocument] = useState<VaultDocument | null>(null);
+  const [useVaultDocument, setUseVaultDocument] = useState(false);
   const [form, setForm] = useState({
     dateNaissance: "",
     dateDelivrance: "",
@@ -233,7 +236,25 @@ function DeclarerPage() {
       ? form.periodeDebut.trim() !== "" &&
         form.periodeFin.trim() !== "" &&
         Number(form.periodeFin) >= Number(form.periodeDebut)
-      : Boolean(form.dateDelivrance.trim() && (photo || photoPath)));
+      : Boolean(form.dateDelivrance.trim() && (photo || photoPath || photoPreview)));
+
+  useEffect(() => {
+    if (type !== "perdu" || !userId) return;
+
+    const checkVault = async () => {
+      try {
+        const doc = await getDocumentForDeclaration(userId, documentType || form.typeDocument);
+        if (doc) {
+          setVaultDocument(doc);
+          setUseVaultDocument(false);
+        }
+      } catch (error) {
+        console.error("Erreur vérification coffre:", error);
+      }
+    };
+
+    void checkVault();
+  }, [userId, type, documentType, form.typeDocument]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -356,9 +377,19 @@ function DeclarerPage() {
   return (
     <AppShell>
       <div className="mx-auto max-w-2xl space-y-5">
-        <ImageBanner src={IMAGES.declaration} alt="Documents administratifs">
-          <h1 className="text-2xl font-bold sm:text-3xl">📄 Déclarer un document</h1>
-          <p className="text-sm opacity-90">Perdu ou trouvé, en quelques étapes</p>
+        <ImageBanner src={IMAGES.declaration} alt="Documents administratifs" overlayOpacity={60}>
+          <div className="flex items-center gap-3">
+            <img
+              src="https://cdn-icons-png.flaticon.com/512/870/870091.png"
+              alt="Document"
+              className="h-12 w-12 object-contain drop-shadow-[0_8px_20px_rgba(96,165,250,0.35)]"
+              loading="lazy"
+            />
+            <div>
+              <h1 className="text-2xl font-bold sm:text-3xl">Déclarer un document</h1>
+              <p className="text-sm opacity-90">Perdu ou trouvé, en quelques étapes</p>
+            </div>
+          </div>
         </ImageBanner>
 
         <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-900">
@@ -413,6 +444,35 @@ function DeclarerPage() {
               />
             </div>
           </div>
+
+          {type === "perdu" && vaultDocument ? (
+            <div className="rounded-lg border border-primary/25 bg-primary/5 p-4">
+              <div className="flex items-center gap-3">
+                <img
+                  src="https://cdn-icons-png.flaticon.com/512/599/599683.png"
+                  alt="Coffre"
+                  className="h-10 w-10 object-contain"
+                  loading="lazy"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium">Document trouvé dans votre coffre</p>
+                  <p className="text-sm text-muted-foreground">{vaultDocument.document_name}</p>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setUseVaultDocument(true);
+                    setForm((current) => ({ ...current, numeroPiece: current.numeroPiece || vaultDocument.document_name }));
+                    setDocumentType(vaultDocument.document_type || documentType);
+                    toast.success("Document lié à la déclaration");
+                  }}
+                >
+                  Utiliser
+                </Button>
+              </div>
+            </div>
+          ) : null}
 
           {type === "perdu" ? (
           <div className="space-y-2">
@@ -496,14 +556,14 @@ function DeclarerPage() {
             </div>
           )}
 
-          {type === "trouve" && <div className="space-y-2">
-              <Label htmlFor="document-photo">
-                Photo du document *
-              </Label>
+          {type === "trouve" && (
+            <div className="space-y-2">
+              <Label htmlFor="document-photo">Photo du document *</Label>
+              <p className="text-sm font-medium text-red-600">⚠️ Obligatoire pour déclarer une trouvaille</p>
               <p className="text-xs text-muted-foreground">
-                Ajoutez une photo pour voir les informations du titulaire.
+                Pour une CNI : prenez le recto et le verso. Pour un passeport : la page des informations.
               </p>
-              <div className="rounded-lg border-2 border-dashed border-border p-4 text-center">
+              <div className="rounded-lg border-2 border-dashed border-red-300 bg-red-50/30 p-4 text-center">
                 {photoPreview ? (
                   <div className="space-y-3">
                     <img
@@ -512,11 +572,9 @@ function DeclarerPage() {
                       className="mx-auto max-h-64 rounded-lg object-contain"
                       draggable={false}
                     />
-                    {photo ? (
-                      <Button type="button" variant="destructive" size="sm" onClick={clearPhoto}>
-                        Retirer la photo
-                      </Button>
-                    ) : null}
+                    <Button type="button" variant="destructive" size="sm" onClick={clearPhoto}>
+                      Retirer la photo
+                    </Button>
                   </div>
                 ) : (
                   <>
@@ -530,11 +588,14 @@ function DeclarerPage() {
                       accept="image/jpeg,image/png,image/webp"
                       onChange={handlePhotoChange}
                       className="mx-auto mt-3 max-w-sm cursor-pointer"
+                      required
                     />
                   </>
                 )}
               </div>
-          </div>}
+              {!photoPreview && <p className="text-xs text-red-500">Une photo est requise pour valider la déclaration.</p>}
+            </div>
+          )}
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">

@@ -7,6 +7,7 @@ interface ImageBannerProps {
   className?: string;
   height?: string;
   overlay?: boolean;
+  overlayOpacity?: number;
   children?: ReactNode;
 }
 
@@ -16,6 +17,7 @@ export function ImageBanner({
   className,
   height = "h-48 md:h-64",
   overlay = true,
+  overlayOpacity = 80,
   children,
 }: ImageBannerProps) {
   return (
@@ -28,7 +30,8 @@ export function ImageBanner({
       />
       {overlay ? (
         <div
-          className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/35 to-transparent"
+          className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/35 to-transparent"
+          style={{ opacity: overlayOpacity / 100 }}
           aria-hidden
         />
       ) : null}

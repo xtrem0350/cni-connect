@@ -27,6 +27,7 @@ Structure du projet (avec glob)
 │   │   ├── 📁 chat/
 │   │   │   └── 📄 $matchId.tsx
 │   │   ├── 📄 __root.tsx
+│   │   ├── 📄 vault.tsx
 │   │   ├── 📄 statut.tsx
 │   │   ├── 📄 signalements.tsx
 │   │   ├── 📄 signalement.tsx
@@ -46,6 +47,7 @@ Structure du projet (avec glob)
 │   ├── 📁 lib/
 │   │   ├── 📄 utils.ts
 │   │   ├── 📄 lovable-error-reporting.ts
+│   │   ├── 📄 images.ts
 │   │   ├── 📄 error-page.ts
 │   │   ├── 📄 error-capture.ts
 │   │   └── 📄 documents.ts
@@ -110,6 +112,7 @@ Structure du projet (avec glob)
 │   │   ├── 📄 PhoneInput.tsx
 │   │   ├── 📄 Navigation.tsx
 │   │   ├── 📄 LoadingSpinner.tsx
+│   │   ├── 📄 ImageBanner.tsx
 │   │   ├── 📄 HeroBanner.tsx
 │   │   ├── 📄 DocumentCard.tsx
 │   │   ├── 📄 ChatMessage.tsx
