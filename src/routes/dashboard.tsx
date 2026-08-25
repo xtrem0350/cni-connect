@@ -134,18 +134,20 @@ function DashboardPage() {
   return (
     <AppShell>
       <div className="space-y-6">
-        <HeroBanner title="Tableau de bord" subtitle="Gérez vos déclarations" />
-
-        <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-          <h1 className="text-2xl font-bold text-foreground">
+        <ImageBanner src={IMAGES.dashboard} alt="Bureau organisé" height="h-56 md:h-72">
+          <h1 className="text-2xl font-bold sm:text-3xl">
             {greeting}, {displayName}
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">Téléphone : {displayPhone}</p>
-          <p className="mt-2 text-sm font-medium text-muted-foreground">
-            Code : <span className="font-mono text-base text-foreground">{userCode}</span>
-          </p>
-          <p className="mt-1 text-sm text-muted-foreground">Statut : {statusLabel}</p>
-        </div>
+          <div className="flex flex-wrap gap-2 text-xs font-semibold">
+            <span className="rounded-full bg-white/15 px-3 py-1 backdrop-blur">
+              📱 {displayPhone}
+            </span>
+            <span className="rounded-full bg-white/15 px-3 py-1 font-mono backdrop-blur">
+              🔑 {userCode}
+            </span>
+            <span className="rounded-full bg-white/15 px-3 py-1 backdrop-blur">{statusLabel}</span>
+          </div>
+        </ImageBanner>
 
         <div className="flex flex-wrap gap-3">
           <Button
